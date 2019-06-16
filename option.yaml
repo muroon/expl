@@ -1,0 +1,19 @@
+database: 
+host:
+user:
+pass:
+conf:
+log:
+format:
+format-cmd:
+filter-select-type: []
+filter-no-select-type: []
+filter-table: []
+filter-no-table: []
+filter-type: []
+filter-no-type: []
+filter-extra: []
+filter-no-extra: []
+update-table-map:
+ignore-error:
+combine-sql:

@@ -1,0 +1,8 @@
+# .DS_Store
+.DS_Store
+
+# _test.go
+service/*_test.go
+
+# .goreleaser.yml
+.goreleaser.yml
