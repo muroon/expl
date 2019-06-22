@@ -28,8 +28,8 @@ var officialDB string
 
 type explainResult struct {
 	ID           int64
-	SelectType   string
-	Table        string
+	SelectType   sql.NullString
+	Table        sql.NullString
 	Partitions   sql.NullInt64
 	Type         sql.NullString
 	PossibleKeys sql.NullString
@@ -83,8 +83,8 @@ func explain(ctx context.Context, database, sql string) ([]*model.Explain, error
 		}
 		exm := &model.Explain{
 			ID:           ex.ID,
-			SelectType:   ex.SelectType,
-			Table:        ex.Table,
+			SelectType:   ex.SelectType.String,
+			Table:        ex.Table.String,
 			Partitions:   ex.Partitions.Int64,
 			Type:         ex.Type.String,
 			PossibleKeys: ex.PossibleKeys.String,

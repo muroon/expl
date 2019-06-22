@@ -48,7 +48,7 @@ option:
                                       ex)
                                         -c $GOPATH/bin/table-mapping.yaml
   -l, --log:                string  log file path. This is used in log mode. "EXPL_LOG" environment variable as a default value.
-  -fm, --format:            string  sql format.
+  -f, --format:             string  sql format.
                                       value:
                                         simple (default):  simple is only sql.
                                         official:          sql is offical mysql sql.log's format.
