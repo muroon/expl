@@ -236,11 +236,6 @@ var explainCmd = &cobra.Command{
 			}()
 		case "log":
 			err = func() error {
-				sqls, err := service.LoadQueriesFromLog(ctx, logPath, service.FormatType(format), formatCmd)
-				if err != nil {
-					return err
-				}
-
 				if err = service.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
 					return err
 				}
@@ -249,11 +244,28 @@ var explainCmd = &cobra.Command{
 					return err
 				}
 
-				list, err := service.Explains(ctx, sqls, expOpt, fiOpt)
-				if err == nil {
-					view.RenderExplains(list, expOpt.Uniq)
+				qCh, erCh := service.LoadQueriesFromLogChannels(ctx, logPath, service.FormatType(format), formatCmd)
+
+				exCh, errCh := service.ExplainChannels(ctx, qCh, expOpt, fiOpt)
+				for {
+					select {
+					case exp, ok := <-exCh:
+						if !ok {
+							return nil
+						} else {
+							view.RenderExplain(exp, expOpt.Uniq)
+						}
+					case err = <-errCh:
+						if err != nil {
+							return err
+						}
+					case er := <-erCh:
+						if er != nil {
+							return er
+						}
+					}
 				}
-				return err
+				return nil
 			}()
 
 		case "log-db":
@@ -266,16 +278,29 @@ var explainCmd = &cobra.Command{
 					return err
 				}
 
-				sqls, err := service.LoadQueriesFromDB(ctx)
-				if err != nil {
-					return err
-				}
+				qCh, erCh := service.LoadQueriesFromDBChannels(ctx)
 
-				list, err := service.Explains(ctx, sqls, expOpt, fiOpt)
-				if err == nil {
-					view.RenderExplains(list, expOpt.Uniq)
+				exCh, errCh := service.ExplainChannels(ctx, qCh, expOpt, fiOpt)
+				for {
+					select {
+					case exp, ok := <-exCh:
+						if !ok {
+							return nil
+						} else {
+							view.RenderExplain(exp, expOpt.Uniq)
+						}
+					case err = <-errCh:
+						if err != nil {
+							return err
+						}
+					case er := <-erCh:
+						if er != nil {
+							return er
+						}
+					}
 				}
-				return err
+				return nil
+
 			}()
 		}
 

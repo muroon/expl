@@ -6,6 +6,51 @@ import (
 	"strings"
 )
 
+// ExplainChannels execute explain queries
+func ExplainChannels(
+	ctx context.Context,
+	queryCh <-chan string,
+	option *model.ExplainOption,
+	fi *model.ExplainFilter,
+) (<-chan *model.ExplainInfo, <-chan error) {
+
+	exCh := make(chan *model.ExplainInfo)
+	errCh := make(chan error)
+
+	option.TableMap = GetTableDBMap(ctx) // TODO: ここでやるべき？
+
+	go func() {
+		defer func() {
+			close(exCh)
+			close(errCh)
+		}()
+
+		if err := openAdditonal(ctx, GetDBInfo(ctx)); err != nil {
+			errCh <- err
+			return
+		}
+
+		ech, erch := exeExplainChannels(ctx, queryCh, option)
+		var err error
+		for {
+			select {
+			case exp, ok := <-ech:
+				if !ok {
+					return
+				} else if getAdditionalFlgInFilterResult(exp, fi) {
+					exCh <- exp
+				}
+			case err = <-erch:
+				errCh <- err
+				return
+			}
+		}
+
+	}()
+
+	return exCh, errCh
+}
+
 // Explains execute explain queries
 func Explains(
 	ctx context.Context,
@@ -106,6 +151,82 @@ func exeExplains(
 	return list, nil
 }
 
+func exeExplainChannels(
+	ctx context.Context, queryCh <-chan string, option *model.ExplainOption,
+) (<-chan *model.ExplainInfo, <-chan error) {
+
+	exCh := make(chan *model.ExplainInfo)
+	errCh := make(chan error)
+
+	queryMap := map[string]*model.SQLInfo{}
+
+	go func() {
+		defer func() {
+			errCh <- nil
+			close(exCh)
+			close(errCh)
+		}()
+
+		for q := range queryCh {
+			// SQL Parse
+			info, err := getSQLInfo(ctx, q)
+			if err != nil {
+				if option.NoError {
+					if ErrCode(err) == int(SQLParseError) {
+						continue
+					}
+				}
+				errCh <- err
+				return
+			}
+			if info.Table == "" {
+				continue
+			}
+
+			// uniqフラグ指定の場合、重複SQLの除外
+			if _, ok := queryMap[info.PrepareSQL]; ok && option.Uniq {
+				continue
+			}
+			queryMap[info.PrepareSQL] = info
+
+			if option.UseTableMap {
+				for _, db := range option.TableMap[info.Table] {
+					// Explain実行
+					expInfo, err := exeExplain(ctx, db, q, info.PrepareSQL)
+					if err != nil {
+						if option.NoError {
+							if ErrCode(err) == int(ExeExplainError) {
+								continue
+							}
+						}
+						errCh <- err
+						return
+					}
+
+					exCh <- expInfo
+				}
+			} else {
+				// Explain実行
+				db := option.DB
+				expInfo, err := exeExplain(ctx, db, q, info.PrepareSQL)
+				if err != nil {
+					if option.NoError {
+						if ErrCode(err) == int(ExeExplainError) {
+							continue
+						}
+					}
+					errCh <- err
+					return
+				}
+
+				exCh <- expInfo
+			}
+		}
+	}()
+
+	return exCh, errCh
+}
+
 func exeExplain(ctx context.Context, db, sql, prepareSQL string) (*model.ExplainInfo, error) {
 	exps, err := explain(ctx, db, sql)
 	if err != nil {
@@ -130,42 +251,46 @@ func filterResults(infos []*model.ExplainInfo, fi *model.ExplainFilter) []*model
 
 	for _, info := range infos {
 
-		add := true
-		for i, exp := range info.Values {
-
-			if i == 0 || !add {
-				// SelectType
-				add = getAddFlagForFiltering(add, fi.SelectType, exp.SelectType, false, false)
-
-				// Table
-				add = getAddFlagForFiltering(add, fi.Table, exp.Table, false, false)
-
-				// Type
-				add = getAddFlagForFiltering(add, fi.Type, exp.Type, false, false)
-
-				// Extra
-				add = getAddFlagForFiltering(add, fi.Extra, exp.Extra, false, true)
-			}
-
-			// SelectTypeNot
-			add = getAddFlagForFiltering(add, fi.SelectTypeNot, exp.SelectType, true, false)
-
-			// TableNot
-			add = getAddFlagForFiltering(add, fi.TableNot, exp.Table, true, false)
-
-			// TypeNot
-			add = getAddFlagForFiltering(add, fi.TypeNot, exp.Type, true, false)
-
-			// ExtraNot
-			add = getAddFlagForFiltering(add, fi.ExtraNot, exp.Extra, true, true)
+		if !getAdditionalFlgInFilterResult(info, fi) {
+			continue
 		}
-
-		if add {
-			list = append(list, info)
-		}
+		list = append(list, info)
 	}
 
 	return list
+}
+
+func getAdditionalFlgInFilterResult(info *model.ExplainInfo, fi *model.ExplainFilter) bool {
+	add := true
+	for i, exp := range info.Values {
+
+		if i == 0 || !add {
+			// SelectType
+			add = getAddFlagForFiltering(add, fi.SelectType, exp.SelectType, false, false)
+
+			// Table
+			add = getAddFlagForFiltering(add, fi.Table, exp.Table, false, false)
+
+			// Type
+			add = getAddFlagForFiltering(add, fi.Type, exp.Type, false, false)
+
+			// Extra
+			add = getAddFlagForFiltering(add, fi.Extra, exp.Extra, false, true)
+		}
+
+		// SelectTypeNot
+		add = getAddFlagForFiltering(add, fi.SelectTypeNot, exp.SelectType, true, false)
+
+		// TableNot
+		add = getAddFlagForFiltering(add, fi.TableNot, exp.Table, true, false)
+
+		// TypeNot
+		add = getAddFlagForFiltering(add, fi.TypeNot, exp.Type, true, false)
+
+		// ExtraNot
+		add = getAddFlagForFiltering(add, fi.ExtraNot, exp.Extra, true, true)
+	}
+	return add
 }
 
 func getAddFlagForFiltering(add bool, list []string, target string, not, isExp bool) bool {

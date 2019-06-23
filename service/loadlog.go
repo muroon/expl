@@ -17,37 +17,82 @@ const (
 	FormatCommand  FormatType = "command"
 )
 
-func LoadQueriesFromLog(ctx context.Context, filePath string, format FormatType, cmd string) ([]string, error) {
-	queries := []string{}
+func LoadQueriesFromLogChannels(
+	ctx context.Context, filePath string, format FormatType, cmd string,
+) (<-chan string, <-chan error) {
 
-	filePath, err := getPath(filePath)
-	if err != nil {
-		return queries, ErrWrap(err, UserInputError)
-	}
+	qCh := make(chan string)
+	errCh := make(chan error)
 
-	f, err := os.Open(filePath)
-	if err != nil {
-		return queries, ErrWrap(err, UserInputError)
-	}
-	defer f.Close()
+	go func() {
+		defer func() {
+			close(qCh)
+			close(errCh)
+		}()
 
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		query, err := GetQueryByFormat(format, scanner.Text(), cmd)
+		filePath, err := getPath(filePath)
 		if err != nil {
-			return queries, ErrWrap(err, UserInputError)
+			errCh <- ErrWrap(err, UserInputError)
 		}
 
-		if query == "" {
-			continue
+		f, err := os.Open(filePath)
+		if err != nil {
+			errCh <- ErrWrap(err, UserInputError)
 		}
-		queries = append(queries, query)
-	}
-	if err := scanner.Err(); err != nil {
-		return queries, ErrWrap(err, UserInputError)
-	}
+		defer f.Close()
 
-	return queries, nil
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			query, err := GetQueryByFormat(format, scanner.Text(), cmd)
+			if err != nil {
+				errCh <- ErrWrap(err, UserInputError)
+			}
+
+			if query == "" {
+				continue
+			}
+			qCh <- query
+		}
+		if err := scanner.Err(); err != nil {
+			errCh <- ErrWrap(err, UserInputError)
+		}
+	}()
+
+	return qCh, errCh
+}
+
+func LoadQueriesFromDBChannels(ctx context.Context) (<-chan string, <-chan error) {
+	qCh := make(chan string)
+	errCh := make(chan error)
+
+	go func() {
+		defer close(qCh)
+		defer close(errCh)
+
+		rows, err := query(officialDB, "select argument from general_log where command_type in ('Query', 'Execute')")
+		if err != nil {
+			errCh <- ErrWrap(err, OtherError)
+			return
+		}
+
+		for rows.Next() {
+			var value string
+			if err := rows.Scan(&value); err != nil {
+				errCh <- ErrWrap(err, OtherError)
+				return
+			}
+			qCh <- value
+		}
+
+		defer rows.Close()
+
+		if err := rows.Err(); err != nil {
+			errCh <- ErrWrap(err, OtherError)
+			return
+		}
+	}()
+
+	return qCh, errCh
 }
 
 func GetQueryByFormat(format FormatType, line, cmd string) (string, error) {
@@ -78,29 +123,4 @@ func GetQueryByFormat(format FormatType, line, cmd string) (string, error) {
 	}
 
 	return query, nil
-}
-
-func LoadQueriesFromDB(ctx context.Context) ([]string, error) {
-	list := []string{}
-
-	rows, err := query(officialDB, "select argument from general_log where command_type in ('Query', 'Execute')")
-	if err != nil {
-		return nil, ErrWrap(err, OtherError)
-	}
-
-	for rows.Next() {
-		var value string
-		if err := rows.Scan(&value); err != nil {
-			return nil, ErrWrap(err, OtherError)
-		}
-		list = append(list, value)
-	}
-
-	defer rows.Close()
-
-	if err := rows.Err(); err != nil {
-		return list, ErrWrap(err, OtherError)
-	}
-
-	return list, nil
 }

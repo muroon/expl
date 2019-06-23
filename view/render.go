@@ -34,33 +34,38 @@ var optionHeader []string = []string{
 func RenderExplains(infos []*model.ExplainInfo, isParseEnable bool) {
 
 	for _, info := range infos {
-
-		headerDatas := make([][]string, 0, 3)
-		headerDatas = append(headerDatas, []string{"DataBase:", info.DataBase})
-		if isParseEnable {
-			headerDatas = append(headerDatas, []string{"ParsedSQL:", info.PrepareSQL})
-		}
-		headerDatas = append(headerDatas, []string{"SQL:", info.SQL})
-
-		headerTable := tablewriter.NewWriter(os.Stdout)
-		headerTable.SetBorder(false)
-		headerTable.SetColumnSeparator("")
-		headerTable.SetAutoWrapText(false)
-		headerTable.SetAlignment(tablewriter.ALIGN_LEFT)
-		headerTable.AppendBulk(headerDatas)
-		headerTable.Render()
-
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader(tableHeader)
-
-		for _, v := range info.Values {
-			table.Append(getRecord(v))
-		}
-
-		table.Render()
-
-		fmt.Print("\n")
+		RenderExplain(info, isParseEnable)
 	}
+}
+
+// RenderExplain render expl result
+func RenderExplain(info *model.ExplainInfo, isParseEnable bool) {
+
+	headerDatas := make([][]string, 0, 3)
+	headerDatas = append(headerDatas, []string{"DataBase:", info.DataBase})
+	if isParseEnable {
+		headerDatas = append(headerDatas, []string{"ParsedSQL:", info.PrepareSQL})
+	}
+	headerDatas = append(headerDatas, []string{"SQL:", info.SQL})
+
+	headerTable := tablewriter.NewWriter(os.Stdout)
+	headerTable.SetBorder(false)
+	headerTable.SetColumnSeparator("")
+	headerTable.SetAutoWrapText(false)
+	headerTable.SetAlignment(tablewriter.ALIGN_LEFT)
+	headerTable.AppendBulk(headerDatas)
+	headerTable.Render()
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader(tableHeader)
+
+	for _, v := range info.Values {
+		table.Append(getRecord(v))
+	}
+
+	table.Render()
+
+	fmt.Print("\n")
 }
 
 func getRecord(e *model.Explain) []string {
