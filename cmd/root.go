@@ -39,7 +39,7 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		versionFlag, err := cmd.Flags().GetBool("version")
 		if err == nil && versionFlag {
-			fmt.Println("1.0.1")
+			fmt.Println("1.0.2")
 		}
 	},
 }
@@ -61,5 +61,5 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("version", "", true, "version")
+	rootCmd.Flags().BoolP("version", "v", true, "version")
 }

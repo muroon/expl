@@ -17,7 +17,7 @@ func ExplainChannels(
 	exCh := make(chan *model.ExplainInfo)
 	errCh := make(chan error)
 
-	option.TableMap = GetTableDBMap(ctx) // TODO: ここでやるべき？
+	option.TableMap = GetTableDBMap(ctx)
 
 	go func() {
 		defer func() {
@@ -51,27 +51,31 @@ func ExplainChannels(
 	return exCh, errCh
 }
 
-// Explains execute explain queries
-func Explains(
+// Explain execute explain query
+func Explain(
 	ctx context.Context,
-	queries []string,
+	query string,
 	option *model.ExplainOption,
 	fi *model.ExplainFilter,
-) ([]*model.ExplainInfo, error) {
-	infos := make([]*model.ExplainInfo, 0)
+) (*model.ExplainInfo, error) {
+	expIno := new(model.ExplainInfo)
 
-	option.TableMap = GetTableDBMap(ctx) // TODO: ここでやるべき？
+	option.TableMap = GetTableDBMap(ctx)
 
 	if err := openAdditonal(ctx, GetDBInfo(ctx)); err != nil {
-		return infos, err
+		return expIno, err
 	}
 
-	infos, err := exeExplains(ctx, queries, option)
+	exp, err := exeExplainOne(ctx, query, option)
 	if err != nil {
-		return infos, err
+		return expIno, err
 	}
 
-	return filterResults(infos, fi), nil
+	if !getAdditionalFlgInFilterResult(exp, fi) {
+		return expIno, nil
+	}
+
+	return exp, nil
 }
 
 func openAdditonal(ctx context.Context, dbi *model.DBInfo) error {
@@ -86,69 +90,45 @@ func openAdditonal(ctx context.Context, dbi *model.DBInfo) error {
 	return nil
 }
 
-func exeExplains(
-	ctx context.Context, queries []string, option *model.ExplainOption,
-) ([]*model.ExplainInfo, error) {
+func exeExplainOne(
+	ctx context.Context, query string, option *model.ExplainOption,
+) (*model.ExplainInfo, error) {
 
-	list := []*model.ExplainInfo{}
+	expInfo := new(model.ExplainInfo)
 
-	queryMap := map[string]*model.SQLInfo{}
-
-	for _, q := range queries {
-		// SQL Parse
-		info, err := getSQLInfo(ctx, q)
-		if err != nil {
-			if option.NoError {
-				if ErrCode(err) == int(SQLParseError) {
-					continue
-				}
-			}
+	// SQL Parse
+	info, err := getSQLInfo(ctx, query)
+	if err != nil {
+		if !option.NoError || ErrCode(err) != int(SQLParseError) {
 			return nil, err
 		}
-		if info.Table == "" {
-			continue
-		}
-
-		// uniqフラグ指定の場合、重複SQLの除外
-		if _, ok := queryMap[info.PrepareSQL]; ok && option.Uniq {
-			continue
-		}
-		queryMap[info.PrepareSQL] = info
-
-		if option.UseTableMap {
-			for _, db := range option.TableMap[info.Table] {
-				// Explain実行
-				expInfo, err := exeExplain(ctx, db, q, info.PrepareSQL)
-				if err != nil {
-					if option.NoError {
-						if ErrCode(err) == int(ExeExplainError) {
-							continue
-						}
-					}
-					return nil, err
-				}
-
-				list = append(list, expInfo)
-			}
-		} else {
-			// Explain実行
-			db := option.DB
-			expInfo, err := exeExplain(ctx, db, q, info.PrepareSQL)
-			if err != nil {
-				if option.NoError {
-					if ErrCode(err) == int(ExeExplainError) {
-						continue
-					}
-				}
-				return nil, err
-			}
-
-			list = append(list, expInfo)
-		}
-
+	}
+	if info.Table == "" {
+		return expInfo, nil
 	}
 
-	return list, nil
+	if option.UseTableMap {
+		for _, db := range option.TableMap[info.Table] {
+			// Explain実行
+			expInfo, err = exeExplain(ctx, db, query, info.PrepareSQL)
+			if err != nil {
+				if !option.NoError || ErrCode(err) != int(ExeExplainError) {
+					return nil, err
+				}
+			}
+		}
+	} else {
+		// Explain実行
+		db := option.DB
+		expInfo, err = exeExplain(ctx, db, query, info.PrepareSQL)
+		if err != nil {
+			if !option.NoError || ErrCode(err) != int(ExeExplainError) {
+				return nil, err
+			}
+		}
+	}
+
+	return expInfo, nil
 }
 
 func exeExplainChannels(
@@ -241,26 +221,11 @@ func exeExplain(ctx context.Context, db, sql, prepareSQL string) (*model.Explain
 	}, nil
 }
 
-func filterResults(infos []*model.ExplainInfo, fi *model.ExplainFilter) []*model.ExplainInfo {
-
-	if fi == (&model.ExplainFilter{}) {
-		return infos
-	}
-
-	list := make([]*model.ExplainInfo, 0, len(infos))
-
-	for _, info := range infos {
-
-		if !getAdditionalFlgInFilterResult(info, fi) {
-			continue
-		}
-		list = append(list, info)
-	}
-
-	return list
-}
-
 func getAdditionalFlgInFilterResult(info *model.ExplainInfo, fi *model.ExplainFilter) bool {
+	if fi == (&model.ExplainFilter{}) {
+		return true
+	}
+
 	add := true
 	for i, exp := range info.Values {
 

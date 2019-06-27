@@ -30,16 +30,12 @@ var optionHeader []string = []string{
 	"value",
 }
 
-// RenderExplains render expl results
-func RenderExplains(infos []*model.ExplainInfo, isParseEnable bool) {
-
-	for _, info := range infos {
-		RenderExplain(info, isParseEnable)
-	}
-}
-
 // RenderExplain render expl result
 func RenderExplain(info *model.ExplainInfo, isParseEnable bool) {
+
+	if info == nil || len(info.Values) == 0 {
+		return
+	}
 
 	headerDatas := make([][]string, 0, 3)
 	headerDatas = append(headerDatas, []string{"DataBase:", info.DataBase})

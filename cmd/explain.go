@@ -228,9 +228,9 @@ var explainCmd = &cobra.Command{
 					return err
 				}
 
-				list, err := service.Explains(ctx, []string{sql}, expOpt, fiOpt)
+				exp, err := service.Explain(ctx, sql, expOpt, fiOpt)
 				if err == nil {
-					view.RenderExplains(list, false)
+					view.RenderExplain(exp, false)
 				}
 				return err
 			}()
