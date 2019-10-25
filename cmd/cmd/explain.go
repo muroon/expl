@@ -16,8 +16,8 @@ package cmd
 
 import (
 	"context"
+	"expl"
 	"expl/model"
-	"expl/service"
 	"expl/view"
 
 	"fmt"
@@ -169,7 +169,7 @@ var explainCmd = &cobra.Command{
 		format := viper.GetString("format")
 		formatCmd := viper.GetString("format-cmd")
 		if formatCmd != "" {
-			format = string(service.FormatCommand)
+			format = string(expl.FormatCommand)
 		}
 
 		// filter options
@@ -206,16 +206,16 @@ var explainCmd = &cobra.Command{
 		case "simple":
 			err = func() error {
 				if expOpt.UseTableMap {
-					if err = service.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
+					if err = expl.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
 						return err
 					}
 
-					if err = service.LoadDBInfo(ctx, expOpt.Config); err != nil {
+					if err = expl.LoadDBInfo(ctx, expOpt.Config); err != nil {
 						return err
 					}
 
 				} else {
-					service.SetDBOne(
+					expl.SetDBOne(
 						expOpt.DBHost,
 						expOpt.DB,
 						expOpt.DBUser,
@@ -223,12 +223,12 @@ var explainCmd = &cobra.Command{
 					)
 				}
 
-				sql, err = service.GetQueryByFormat(service.FormatType(format), sql, formatCmd)
+				sql, err = expl.GetQueryByFormat(expl.FormatType(format), sql, formatCmd)
 				if err != nil {
 					return err
 				}
 
-				exp, err := service.Explain(ctx, sql, expOpt, fiOpt)
+				exp, err := expl.Explain(ctx, sql, expOpt, fiOpt)
 				if err == nil {
 					view.RenderExplain(exp, false)
 				}
@@ -236,17 +236,17 @@ var explainCmd = &cobra.Command{
 			}()
 		case "log":
 			err = func() error {
-				if err = service.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
+				if err = expl.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
 					return err
 				}
 
-				if err = service.LoadDBInfo(ctx, expOpt.Config); err != nil {
+				if err = expl.LoadDBInfo(ctx, expOpt.Config); err != nil {
 					return err
 				}
 
-				qCh, erCh := service.LoadQueriesFromLogChannels(ctx, logPath, service.FormatType(format), formatCmd)
+				qCh, erCh := expl.LoadQueriesFromLogChannels(ctx, logPath, expl.FormatType(format), formatCmd)
 
-				exCh, errCh := service.ExplainChannels(ctx, qCh, expOpt, fiOpt)
+				exCh, errCh := expl.ExplainChannels(ctx, qCh, expOpt, fiOpt)
 				for {
 					select {
 					case exp, ok := <-exCh:
@@ -270,17 +270,17 @@ var explainCmd = &cobra.Command{
 
 		case "log-db":
 			err = func() error {
-				if err = service.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
+				if err = expl.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
 					return err
 				}
 
-				if err = service.LoadDBInfo(ctx, expOpt.Config); err != nil {
+				if err = expl.LoadDBInfo(ctx, expOpt.Config); err != nil {
 					return err
 				}
 
-				qCh, erCh := service.LoadQueriesFromDBChannels(ctx)
+				qCh, erCh := expl.LoadQueriesFromDBChannels(ctx)
 
-				exCh, errCh := service.ExplainChannels(ctx, qCh, expOpt, fiOpt)
+				exCh, errCh := expl.ExplainChannels(ctx, qCh, expOpt, fiOpt)
 				for {
 					select {
 					case exp, ok := <-exCh:
@@ -306,7 +306,7 @@ var explainCmd = &cobra.Command{
 
 		if err != nil {
 			fmt.Println("error occured!")
-			fmt.Println(service.Message(err))
+			fmt.Println(expl.Message(err))
 		}
 
 		return err

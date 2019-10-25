@@ -17,7 +17,7 @@ package cmd
 import (
 	"context"
 	"errors"
-	"expl/service"
+	"expl"
 	"fmt"
 	"os"
 
@@ -65,7 +65,7 @@ var confCmd = &cobra.Command{
 			user := args[3]
 			pass := args[4]
 
-			err = service.AddHostAndDatabase(ctx, user, pass, host, database, filePath)
+			err = expl.AddHostAndDatabase(ctx, user, pass, host, database, filePath)
 			fmt.Printf("conf %s %s %s %s %s %s\n", action, host, database, user, pass, filePath)
 		case "rm":
 			host := args[1]
@@ -73,17 +73,17 @@ var confCmd = &cobra.Command{
 			user := args[3]
 			pass := args[4]
 
-			err = service.RemoveHostAndDatabase(ctx, user, pass, host, database, filePath)
+			err = expl.RemoveHostAndDatabase(ctx, user, pass, host, database, filePath)
 			fmt.Printf("conf %s %s %s %s %s %s\n", action, host, database, user, pass, filePath)
 		case "mapping":
-			err = service.ReloadAllTableInfo(ctx, filePath)
+			err = expl.ReloadAllTableInfo(ctx, filePath)
 			fmt.Printf("conf %s\n", action)
 		default:
 			return fmt.Errorf("%s is invalid action\n", action)
 		}
 
 		if err != nil {
-			fmt.Print(service.Message(err))
+			fmt.Print(expl.Message(err))
 		}
 
 		return err

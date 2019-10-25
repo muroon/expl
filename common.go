@@ -1,10 +1,12 @@
-package service
+package expl
 
 import (
 	"os"
 	"path"
 	"path/filepath"
 )
+
+const Version string = "1.0.3"
 
 func getPath(filePath string) (string, error) {
 

@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"expl"
 	"fmt"
 	"os"
 
@@ -39,7 +40,7 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		versionFlag, err := cmd.Flags().GetBool("version")
 		if err == nil && versionFlag {
-			fmt.Println("1.0.2")
+			fmt.Println(expl.Version)
 		}
 	},
 }
