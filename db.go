@@ -60,7 +60,7 @@ func open(user, pass, address, database string) (*sql.DB, error) {
 		address = ""
 	}
 
-	dataSourse := fmt.Sprintf("%s:%s@%s/%s", user, pass, address, database)
+	dataSourse := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, pass, address, database)
 	return sql.Open(dbType, dataSourse)
 }
 
