@@ -14,6 +14,7 @@ filter-type: []
 filter-no-type: []
 filter-extra: []
 filter-no-extra: []
+use-table-map:
 update-table-map:
 ignore-error:
 combine-sql:

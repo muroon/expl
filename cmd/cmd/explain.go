@@ -81,7 +81,8 @@ option:
                                         appear results wich "filesort" or "using where" types.
   --filter-no-extra:        strings filter results without target types.
 
-  -U, --update-table-map:           update table-database mapping file before do explain sql. use current database environment.
+  -U, --use-table-map:              use table-database mapping file with explain sql.
+  -P, --update-table-map:           update table-database mapping file before do explain sql. use current database environment.
   -I, --ignore-error:               ignore parse sql error or explain sql error.
   -C, --combine-sql:                This is useful in log or log-db module. combine identical SQL into one.
 
@@ -184,10 +185,15 @@ var explainCmd = &cobra.Command{
 		fiOpt.Extra = viper.GetStringSlice("filter-extra")
 		fiOpt.ExtraNot = viper.GetStringSlice("filter-no-extra")
 
-		expOpt.UseTableMap = viper.GetBool("update-table-map")
-		if expOpt.DB != "" && expOpt.DBHost != "" && expOpt.DBUser != "" {
-			expOpt.UseTableMap = false
+		expOpt.UseTableMap = viper.GetBool("use-table-map")
+		if mode == "simple" {
+			if expOpt.DB != "" && expOpt.DBHost != "" && expOpt.DBUser != "" {
+				expOpt.UseTableMap = false
+			}
+		} else {
+			expOpt.UseTableMap = true
 		}
+		expOpt.UpdateTableMap = viper.GetBool("update-table-map")
 
 		expOpt.NoError = viper.GetBool("ignore-error")
 		expOpt.Uniq = viper.GetBool("combine-sql")
@@ -206,8 +212,10 @@ var explainCmd = &cobra.Command{
 		case "simple":
 			err = func() error {
 				if expOpt.UseTableMap {
-					if err = expl.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
-						return err
+					if expOpt.UpdateTableMap {
+						if err = expl.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
+							return err
+						}
 					}
 
 					if err = expl.LoadDBInfo(ctx, expOpt.Config); err != nil {
@@ -236,8 +244,10 @@ var explainCmd = &cobra.Command{
 			}()
 		case "log":
 			err = func() error {
-				if err = expl.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
-					return err
+				if expOpt.UpdateTableMap {
+					if err = expl.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
+						return err
+					}
 				}
 
 				if err = expl.LoadDBInfo(ctx, expOpt.Config); err != nil {
@@ -270,8 +280,10 @@ var explainCmd = &cobra.Command{
 
 		case "log-db":
 			err = func() error {
-				if err = expl.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
-					return err
+				if expOpt.UpdateTableMap {
+					if err = expl.ReloadAllTableInfo(ctx, expOpt.Config); err != nil {
+						return err
+					}
 				}
 
 				if err = expl.LoadDBInfo(ctx, expOpt.Config); err != nil {
@@ -331,6 +343,7 @@ func init() {
 	viper.SetDefault("filter-extra", []string{})
 	viper.SetDefault("filter-no-extra", []string{})
 
+	viper.SetDefault("use-table-map", true)
 	viper.SetDefault("update-table-map", true)
 
 	explainCmd.PersistentFlags().StringP("database", "d", "", "database")
@@ -349,7 +362,8 @@ func init() {
 	explainCmd.PersistentFlags().StringSlice("filter-no-type", []string{}, "filter results without target types.")
 	explainCmd.PersistentFlags().StringSlice("filter-extra", []string{}, "strings filter results by target taypes.")
 	explainCmd.PersistentFlags().StringSlice("filter-no-extra", []string{}, "filter results without target types.")
-	explainCmd.PersistentFlags().BoolP("update-table-map", "U", true, "update table-database mapping file before do explain sql. use current database environment.")
+	explainCmd.PersistentFlags().BoolP("use-table-map", "U", true, "use table-database mapping file.")
+	explainCmd.PersistentFlags().BoolP("update-table-map", "P", true, "update table-database mapping file before do explain sql. use current database environment.")
 	explainCmd.PersistentFlags().BoolP("ignore-error", "I", false, "ignore sql error.")
 	explainCmd.PersistentFlags().BoolP("combine-sql", "C", false, "This is useful in log or log-db module. combine identical SQL into one.")
 
@@ -379,8 +393,10 @@ func init() {
 	viper.BindPFlag("filter-no-type", explainCmd.PersistentFlags().Lookup("filter-no-type"))
 	viper.BindPFlag("filter-extra", explainCmd.PersistentFlags().Lookup("filter-extra"))
 	viper.BindPFlag("filter-no-extra", explainCmd.PersistentFlags().Lookup("filter-no-extra"))
+	viper.BindPFlag("use-table-map", explainCmd.PersistentFlags().Lookup("use-table-map"))
+	viper.BindPFlag("use-table-map", explainCmd.PersistentFlags().ShorthandLookup("U"))
 	viper.BindPFlag("update-table-map", explainCmd.PersistentFlags().Lookup("update-table-map"))
-	viper.BindPFlag("update-table-map", explainCmd.PersistentFlags().ShorthandLookup("U"))
+	viper.BindPFlag("update-table-map", explainCmd.PersistentFlags().ShorthandLookup("P"))
 	viper.BindPFlag("ignore-error", explainCmd.PersistentFlags().Lookup("ignore-error"))
 	viper.BindPFlag("ignore-error", explainCmd.PersistentFlags().ShorthandLookup("I"))
 	viper.BindPFlag("combine-sql", explainCmd.PersistentFlags().Lookup("combine-sql"))

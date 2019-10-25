@@ -41,6 +41,9 @@ type ExplainOption struct {
 	// useTableMap
 	UseTableMap bool
 
+	// updateTableMap
+	UpdateTableMap bool
+
 	// table-database map
 	TableMap TableDBMap
 
