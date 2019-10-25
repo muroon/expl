@@ -2,9 +2,10 @@ package expl
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/srvc/fail"
+	"strconv"
+
+	"github.com/morikuni/failure"
 )
 
 type ErrorCode int
@@ -26,40 +27,38 @@ var errorMessage = map[ErrorCode]string{
 }
 
 func ErrWrap(err error, code ErrorCode) error {
-	return fail.Wrap(
-		err,
-		fail.WithCode(int(code)),
-		fail.WithIgnorable(),
-	)
+	cd := failure.StringCode(fmt.Sprintf("%d", code))
+	err = failure.Wrap(err, failure.WithCode(cd))
+
+	return err
 }
 
 func ErrWrapWithMessage(err error, code ErrorCode, msg string) error {
-	return fail.Wrap(
-		err,
-		fail.WithCode(int(code)),
-		fail.WithIgnorable(),
-		fail.WithMessage(msg),
-	)
+	cd := failure.StringCode(fmt.Sprintf("%d", code))
+	err = failure.Wrap(err, failure.WithCode(cd), failure.Messagef(msg))
+
+	return err
 }
 
 func Message(err error) string {
-	msg := strings.Join(fail.Unwrap(err).Messages, "\n")
-
-	return fmt.Sprintf("%s %s\nStackTrace:%+v\n",
-		errorMessage[ErrorCode(ErrCode(err))],
-		msg,
-		fail.Unwrap(err).StackTrace,
-	)
+	return fmt.Sprintf("%+v", err)
 }
 
 func LogMessage(err error) string {
-	return fmt.Sprintf("%T\nCode:%d\nStackTrace:%+v\n",
-		err,
-		fail.Unwrap(err).Code,
+	code := ErrCode(err)
+
+	return fmt.Sprintf("Code:%d, %s\nStackTrace:%+v\n",
+		code,
+		errorMessage[ErrorCode(code)],
 		fail.Unwrap(err).StackTrace,
 	)
 }
 
 func ErrCode(err error) int {
-	return fail.Unwrap(err).Code.(int)
+	var code int
+	codeVal, ok := failure.CodeOf(err)
+	if ok {
+		code, _ = strconv.Atoi(codeVal.ErrorCode())
+	}
+	return code
 }

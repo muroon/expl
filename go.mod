@@ -3,6 +3,7 @@ module expl
 require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/mattn/go-runewidth v0.0.4 // indirect
+	github.com/morikuni/failure v0.12.0
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/cobra v0.0.5
