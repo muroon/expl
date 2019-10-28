@@ -89,12 +89,34 @@ var confCmd = &cobra.Command{
 		switch action {
 		case "add":
 
-			err = expl.AddHostAndDatabase(ctx, user, pass, host, database, port, protocol, filePath)
-			fmt.Printf("conf %s %s %s %s %s %d %s %s\n", action, host, database, user, pass, port, protocol, filePath)
+			err = expl.AddHostAndDatabase(ctx,
+				expl.ConfFilePath(filePath),
+				expl.DBUser(user),
+				expl.DBPass(pass),
+				expl.DBHost(host),
+				expl.DBDatabase(database),
+				expl.DBPort(port),
+				expl.DBProtocol(protocol),
+			)
+
+			fmt.Printf("conf %s --host %s --database %s --user %s --pass %s --port %d --protocol %s --conf %s\n",
+				action, host, database, user, pass, port, protocol, filePath,
+			)
 		case "rm":
 
-			err = expl.RemoveHostAndDatabase(ctx, user, pass, host, database, filePath)
-			fmt.Printf("conf %s %s %s %s %s %d %s %s\n", action, host, database, user, pass, port, protocol, filePath)
+			err = expl.RemoveHostAndDatabase(ctx,
+				expl.ConfFilePath(filePath),
+				expl.DBUser(user),
+				expl.DBPass(pass),
+				expl.DBHost(host),
+				expl.DBDatabase(database),
+				expl.DBPort(port),
+				expl.DBProtocol(protocol),
+			)
+
+			fmt.Printf("conf %s --host %s --database %s --user %s --pass %s --port %d --protocol %s --conf %s\n",
+				action, host, database, user, pass, port, protocol, filePath,
+			)
 		case "mapping":
 			err = expl.ReloadAllTableInfo(ctx, filePath)
 			fmt.Printf("conf %s\n", action)

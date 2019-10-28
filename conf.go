@@ -31,57 +31,87 @@ type database struct {
 	Tables  []string `yaml:"tables"`
 }
 
+type param struct {
+	Address      string
+	User         string
+	Password     string
+	Database     string
+	Port         int
+	Protocol     string
+	ConfFilePath string
+}
+
 var dbInfo *model.DBInfo
 
-// setConfig write config
-func setConfig(ctx context.Context, conf *config, filePath string) error {
+type paramFunc func(pm *param) *param
 
-	filePath, err := getPath(filePath)
-	if err != nil {
-		return err
+func DBUser(user string) paramFunc {
+	return func(pm *param) *param {
+		pm.User = user
+		return pm
 	}
-
-	buf, err := yaml.Marshal(conf)
-	if err != nil {
-		return ErrWrap(err, UserInputError)
-	}
-
-	err = ioutil.WriteFile(filePath, buf, os.ModePerm)
-	if err != nil {
-		return ErrWrap(err, UserInputError)
-	}
-
-	return nil
 }
 
-// getConfig get config
-func getConfig(ctx context.Context, filePath string) (*config, error) {
-	// 外部からconfの中身を参照できるようにする
-	var c config
-
-	filePath, err := getPath(filePath)
-	if err != nil {
-		return nil, err
+func DBPass(pass string) paramFunc {
+	return func(pm *param) *param {
+		pm.Password = pass
+		return pm
 	}
-
-	buf, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, ErrWrap(err, UserInputError)
-	}
-
-	err = yaml.Unmarshal(buf, &c)
-	if err != nil {
-		return nil, ErrWrap(err, UserInputError)
-	}
-
-	return &c, nil
 }
 
-func AddHostAndDatabase(ctx context.Context, user, pass, address, dbName string, port int, protocol, filePath string) error {
+func DBHost(address string) paramFunc {
+	return func(pm *param) *param {
+		pm.Address = address
+		return pm
+	}
+}
+
+func DBDatabase(database string) paramFunc {
+	return func(pm *param) *param {
+		pm.Database = database
+		return pm
+	}
+}
+
+func DBPort(port int) paramFunc {
+	return func(pm *param) *param {
+		pm.Port = port
+		return pm
+	}
+}
+
+func DBProtocol(protocol string) paramFunc {
+	return func(pm *param) *param {
+		pm.Protocol = protocol
+		return pm
+	}
+}
+
+func ConfFilePath(path string) paramFunc {
+	return func(pm *param) *param {
+		pm.ConfFilePath = path
+		return pm
+	}
+}
+
+func getParam(pmfs ...paramFunc) *param {
+	pm := &param{
+		Address:  "localhost",
+		Port:     3306,
+		Protocol: "tcp",
+	}
+	for _, pmf := range pmfs {
+		pm = pmf(pm)
+	}
+	return pm
+}
+
+func AddHostAndDatabase(ctx context.Context, pmfs ...paramFunc) error {
+	pm := getParam(pmfs...)
 
 	conf := new(config)
-	if _, err := os.Stat(filePath); err == nil {
-		conf, err = getConfig(ctx, filePath)
+	if _, err := os.Stat(pm.ConfFilePath); err == nil {
+		conf, err = getConfig(ctx, pm.ConfFilePath)
 		if err != nil {
 			return err
 		}
@@ -98,7 +128,11 @@ func AddHostAndDatabase(ctx context.Context, user, pass, address, dbName string,
 	// add Host Info
 	var ho *host
 	for _, h := range conf.Hosts {
-		if h.User == user && h.Password == pass && h.Address == address {
+		if h.User == pm.User &&
+			h.Password == pm.Password &&
+			h.Address == pm.Address &&
+			h.Port == pm.Port &&
+			h.Protocol == pm.Protocol {
 			ho = h
 			break
 		}
@@ -107,11 +141,11 @@ func AddHostAndDatabase(ctx context.Context, user, pass, address, dbName string,
 	if ho == nil {
 		ho = &host{
 			Key:      len(conf.Hosts) + 1,
-			User:     user,
-			Password: pass,
-			Address:  address,
-			Port:     port,
-			Protocol: protocol,
+			User:     pm.User,
+			Password: pm.Password,
+			Address:  pm.Address,
+			Port:     pm.Port,
+			Protocol: pm.Protocol,
 		}
 
 		conf.Hosts = append(conf.Hosts, ho)
@@ -123,7 +157,7 @@ func AddHostAndDatabase(ctx context.Context, user, pass, address, dbName string,
 
 	// add Database Info
 	for _, d := range conf.Databases {
-		if d.HostKey == hostKey && d.Name == dbName {
+		if d.HostKey == hostKey && d.Name == pm.Database {
 			db = d
 			break
 		}
@@ -132,26 +166,30 @@ func AddHostAndDatabase(ctx context.Context, user, pass, address, dbName string,
 	if db == nil {
 		db = &database{
 			HostKey: hostKey,
-			Name:    dbName,
+			Name:    pm.Database,
 		}
 
 		conf.Databases = append(conf.Databases, db)
 	}
 
-	return setConfig(ctx, conf, filePath)
+	return setConfig(ctx, conf, pm.ConfFilePath)
 }
 
-func RemoveHostAndDatabase(ctx context.Context, user, pass, address, dbName, filePath string) error {
+func RemoveHostAndDatabase(ctx context.Context, pmfs ...paramFunc) error {
+	pm := getParam(pmfs...)
 
-	conf, err := getConfig(ctx, filePath)
+	conf, err := getConfig(ctx, pm.ConfFilePath)
 	if err != nil {
 		return err
 	}
 
-	// add Host Info
 	var ho *host
 	for _, h := range conf.Hosts {
-		if h.User == user && h.Password == pass && h.Address == address {
+		if h.User == pm.User &&
+			h.Password == pm.Password &&
+			h.Address == pm.Address &&
+			h.Port == pm.Port &&
+			h.Protocol == pm.Protocol {
 			ho = h
 			break
 		}
@@ -159,7 +197,7 @@ func RemoveHostAndDatabase(ctx context.Context, user, pass, address, dbName, fil
 
 	if ho == nil {
 		return ErrWrap(
-			fmt.Errorf("none data user:%s, pass:%s, address:%s", user, pass, address),
+			fmt.Errorf("none data parameter:%#v", pm),
 			UserInputError,
 		)
 	}
@@ -172,7 +210,7 @@ func RemoveHostAndDatabase(ctx context.Context, user, pass, address, dbName, fil
 
 	// add Database Info
 	for _, d := range conf.Databases {
-		if d.HostKey == hostKey && d.Name == dbName {
+		if d.HostKey == hostKey && d.Name == pm.Database {
 			db = d
 			continue
 		}
@@ -181,15 +219,13 @@ func RemoveHostAndDatabase(ctx context.Context, user, pass, address, dbName, fil
 
 	if db == nil {
 		return ErrWrap(
-			fmt.Errorf("none data user:%s, pass:%s, address:%s, database:%s",
-				user, pass, address, dbName,
-			),
+			fmt.Errorf("none database data parameter:%#v", pm),
 			UserInputError,
 		)
 	}
 	conf.Databases = dbs
 
-	return setConfig(ctx, conf, filePath)
+	return setConfig(ctx, conf, pm.ConfFilePath)
 }
 
 func ReloadAllTableInfo(ctx context.Context, filePath string) error {
@@ -293,4 +329,48 @@ func GetTableDBMap(ctx context.Context) model.TableDBMap {
 	}
 
 	return model.TableDBMap(tbMap)
+}
+
+// setConfig write config
+func setConfig(ctx context.Context, conf *config, filePath string) error {
+
+	filePath, err := getPath(filePath)
+	if err != nil {
+		return err
+	}
+
+	buf, err := yaml.Marshal(conf)
+	if err != nil {
+		return ErrWrap(err, UserInputError)
+	}
+
+	err = ioutil.WriteFile(filePath, buf, os.ModePerm)
+	if err != nil {
+		return ErrWrap(err, UserInputError)
+	}
+
+	return nil
+}
+
+// getConfig get config
+func getConfig(ctx context.Context, filePath string) (*config, error) {
+	// 外部からconfの中身を参照できるようにする
+	var c config
+
+	filePath, err := getPath(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, ErrWrap(err, UserInputError)
+	}
+
+	err = yaml.Unmarshal(buf, &c)
+	if err != nil {
+		return nil, ErrWrap(err, UserInputError)
+	}
+
+	return &c, nil
 }
