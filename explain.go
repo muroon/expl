@@ -81,7 +81,7 @@ func Explain(
 func openAdditonal(ctx context.Context, dbi *model.DBInfo) error {
 	for _, h := range dbi.Hosts {
 		for _, db := range h.Databases {
-			err := openAdditional(ctx, h.User, h.Password, h.Address, db.Name)
+			err := openAdditional(ctx, h.User, h.Password, h.Address, db.Name, h.Port, h.Protocol)
 			if err != nil {
 				return err
 			}

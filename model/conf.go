@@ -8,6 +8,8 @@ type DBHost struct {
 	Address   string
 	User      string
 	Password  string
+	Port      int
+	Protocol  string
 	Databases []*DBDatabase
 }
 

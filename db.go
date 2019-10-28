@@ -42,9 +42,9 @@ type explainResult struct {
 }
 
 // openAdditional
-func openAdditional(ctx context.Context, user, pass, address, database string) error {
+func openAdditional(ctx context.Context, user, pass, address, database string, port int, protocol string) error {
 
-	db, err := open(user, pass, address, database)
+	db, err := open(user, pass, address, database, port, protocol)
 	if err != nil {
 		return ErrWrap(err, OtherError)
 	}
@@ -55,12 +55,12 @@ func openAdditional(ctx context.Context, user, pass, address, database string) e
 }
 
 // open
-func open(user, pass, address, database string) (*sql.DB, error) {
+func open(user, pass, address, database string, port int, protocol string) (*sql.DB, error) {
 	if address == "localhost" {
 		address = ""
 	}
 
-	dataSourse := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, pass, address, database)
+	dataSourse := fmt.Sprintf("%s:%s@%s(%s:%d)/%s", user, pass, protocol, address, port, database)
 	return sql.Open(dbType, dataSourse)
 }
 

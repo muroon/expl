@@ -21,6 +21,8 @@ type host struct {
 	Address  string `yaml:"address"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
+	Port     int    `yaml:"port"`
+	Protocol string `yaml:"protocol"`
 }
 
 type database struct {
@@ -75,7 +77,7 @@ func getConfig(ctx context.Context, filePath string) (*config, error) {
 	return &c, nil
 }
 
-func AddHostAndDatabase(ctx context.Context, user, pass, address, dbName, filePath string) error {
+func AddHostAndDatabase(ctx context.Context, user, pass, address, dbName string, port int, protocol, filePath string) error {
 
 	conf := new(config)
 	if _, err := os.Stat(filePath); err == nil {
@@ -108,6 +110,8 @@ func AddHostAndDatabase(ctx context.Context, user, pass, address, dbName, filePa
 			User:     user,
 			Password: pass,
 			Address:  address,
+			Port:     port,
+			Protocol: protocol,
 		}
 
 		conf.Hosts = append(conf.Hosts, ho)
@@ -200,7 +204,7 @@ func ReloadAllTableInfo(ctx context.Context, filePath string) error {
 				continue
 			}
 
-			err := openAdditional(ctx, h.User, h.Password, h.Address, db.Name)
+			err := openAdditional(ctx, h.User, h.Password, h.Address, db.Name, h.Port, h.Protocol)
 			if err != nil {
 				return err
 			}
@@ -246,7 +250,14 @@ func LoadDBInfo(ctx context.Context, filePath string) error {
 
 	dbs := []*model.DBHost{}
 	for _, ho := range conf.Hosts {
-		dbh := &model.DBHost{Address: ho.Address, User: ho.User, Password: ho.Password, Databases: []*model.DBDatabase{}}
+		dbh := &model.DBHost{
+			Address:   ho.Address,
+			User:      ho.User,
+			Password:  ho.Password,
+			Port:      ho.Port,
+			Protocol:  ho.Protocol,
+			Databases: []*model.DBDatabase{},
+		}
 		for _, d := range conf.Databases {
 			if d.HostKey != ho.Key {
 				continue

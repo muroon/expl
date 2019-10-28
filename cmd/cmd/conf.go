@@ -56,25 +56,45 @@ var confCmd = &cobra.Command{
 			filePath = os.Getenv("EXPL_CONF")
 		}
 
+		host, err := cmd.Flags().GetString("host")
+		if err != nil {
+			return err
+		}
+
+		database, err := cmd.Flags().GetString("database")
+		if err != nil {
+			return err
+		}
+		user, err := cmd.Flags().GetString("user")
+		if err != nil {
+			return err
+		}
+		pass, err := cmd.Flags().GetString("pass")
+		if err != nil {
+			return err
+		}
+
+		port, err := cmd.Flags().GetInt("port")
+		if err != nil {
+			return err
+		}
+
+		protocol, err := cmd.Flags().GetString("protocol")
+		if err != nil {
+			return err
+		}
+
 		action := args[0]
 
 		switch action {
 		case "add":
-			host := args[1]
-			database := args[2]
-			user := args[3]
-			pass := args[4]
 
-			err = expl.AddHostAndDatabase(ctx, user, pass, host, database, filePath)
-			fmt.Printf("conf %s %s %s %s %s %s\n", action, host, database, user, pass, filePath)
+			err = expl.AddHostAndDatabase(ctx, user, pass, host, database, port, protocol, filePath)
+			fmt.Printf("conf %s %s %s %s %s %d %s %s\n", action, host, database, user, pass, port, protocol, filePath)
 		case "rm":
-			host := args[1]
-			database := args[2]
-			user := args[3]
-			pass := args[4]
 
 			err = expl.RemoveHostAndDatabase(ctx, user, pass, host, database, filePath)
-			fmt.Printf("conf %s %s %s %s %s %s\n", action, host, database, user, pass, filePath)
+			fmt.Printf("conf %s %s %s %s %s %d %s %s\n", action, host, database, user, pass, port, protocol, filePath)
 		case "mapping":
 			err = expl.ReloadAllTableInfo(ctx, filePath)
 			fmt.Printf("conf %s\n", action)
@@ -95,24 +115,39 @@ func init() {
 
 	template := `expl conf action [parameter]...
   action:
-	add:     add database and host, user, password in setting used to explain sql.
-	         ex) add host databasea user password 
-	rm:      remove database and host, user, password in setting used to explain sql.
-	         ex) rm host database user password
+	add:     add database and host, user, password... in setting used to explain sql.
+	rm:      remove database and host, user, password... in setting used to explain sql.
 	mapping: create or update table-dtabase mapping. using sing Host and Databse settings created by the above add action command.
 
   parameter:
 	ex)
-	  expl conf add localhost database1 root password -c configpath
-	  expl conf rm localhost database2 root password -c configpath
-	  expl conf mapping -c configpath  // make table-database mapping file in database1 and database2.
+	  expl conf add --host localhost --database database1 --user root --pass password -conf configpath
+	  expl conf rm --host localhost --database database2 --user root --pass password -conf configpath
+	  expl conf mapping -conf configpath  // make table-database mapping file in database1 and database2.
 
   option:
 	-c, --conf:	config file. You can set and use "EXPL_CONF" environment variable as a default value.
+    -d --database: string  database. used by any sqls. (using onlh simple mode. not using in table mapping mode)
+    -H --host:     string  host used by any sqls.(using onlh simple mode. not using table in mapping mode)
+    -u --user:     string  database user used by any sqls.(using onlh simple mode. not using table in mapping mode)
+    -p --pass:     string  database password used by any sqls.(using onlh simple mode. not using table in mapping mode)
+	-c, --conf:	   string  config file. it includes table mapping. You can set and use "EXPL_CONF" environment variable as a default value.
+                     "EXPL_CONF" environment variable as a default value.
+                     value:
+                       [mapping file path]: database-table mapping file path. default file is ./table_map.yaml.
+                     ex)
+                       -c $GOPATH/bin/table-mapping.yaml
 `
 
 	confCmd.SetUsageTemplate(template)
 	confCmd.SetHelpTemplate(template)
+
+	confCmd.Flags().StringP("database", "d", "localhost", "database")
+	confCmd.Flags().StringP("host", "H", "", "host")
+	confCmd.Flags().StringP("user", "u", "", "database user")
+	confCmd.Flags().StringP("pass", "p", "", "database password")
+	confCmd.Flags().IntP("port", "P", 3306, "database port")
+	confCmd.Flags().StringP("protocol", "R", "tcp", "database protocol. (default:tcp)")
 
 	confCmd.Flags().StringP("conf", "c", "", "config. which includes database-table mapping file.")
 }
