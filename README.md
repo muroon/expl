@@ -31,10 +31,10 @@ This includes relationships between tables and databases.
 - add setting in config file
 
 ```
-# expl conf add host database user pass -c config_file_path
+# expl conf add --host host --database database --user user --pass password --conf config_file_path
 
-$expl conf add localhost database1 root "" -c config.yaml
-$expl conf add localhost database2 root "" -c config.yaml
+$expl conf add --host localhost --database database1 --user root --pass "" --conf config.yaml
+$expl conf add --host localhost --database database2 --user root --pass "" --conf config.yaml
 ```
 
 ## 2. Execute Explian ("explain" sub command)

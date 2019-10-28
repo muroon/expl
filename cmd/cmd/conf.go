@@ -141,24 +141,22 @@ func init() {
 	rm:      remove database and host, user, password... in setting used to explain sql.
 	mapping: create or update table-dtabase mapping. using sing Host and Databse settings created by the above add action command.
 
-  parameter:
-	ex)
-	  expl conf add --host localhost --database database1 --user root --pass password -conf configpath
-	  expl conf rm --host localhost --database database2 --user root --pass password -conf configpath
-	  expl conf mapping -conf configpath  // make table-database mapping file in database1 and database2.
-
   option:
-	-c, --conf:	config file. You can set and use "EXPL_CONF" environment variable as a default value.
-    -d --database: string  database. used by any sqls. (using onlh simple mode. not using in table mapping mode)
-    -H --host:     string  host used by any sqls.(using onlh simple mode. not using table in mapping mode)
-    -u --user:     string  database user used by any sqls.(using onlh simple mode. not using table in mapping mode)
-    -p --pass:     string  database password used by any sqls.(using onlh simple mode. not using table in mapping mode)
+	-d --database: string  database. used by any sqls. (using onlh simple mode. not using in table mapping mode)
+	-H --host:     string  host used by any sqls.(using onlh simple mode. not using table in mapping mode)
+	-u --user:     string  database user used by any sqls.(using onlh simple mode. not using table in mapping mode)
+	-p --pass:     string  database password used by any sqls.(using onlh simple mode. not using table in mapping mode)
 	-c, --conf:	   string  config file. it includes table mapping. You can set and use "EXPL_CONF" environment variable as a default value.
                      "EXPL_CONF" environment variable as a default value.
                      value:
                        [mapping file path]: database-table mapping file path. default file is ./table_map.yaml.
                      ex)
                        -c $GOPATH/bin/table-mapping.yaml
+
+	ex)
+	  expl conf add --host localhost --database database1 --user root --pass password -conf configpath
+	  expl conf rm --host localhost --database database2 --user root --pass password -conf configpath
+	  expl conf mapping -conf configpath  // make table-database mapping file in database1 and database2.
 `
 
 	confCmd.SetUsageTemplate(template)
