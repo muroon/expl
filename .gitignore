@@ -2,7 +2,8 @@
 .DS_Store
 
 # _test.go
-service/*_test.go
+explain_test.go
+conf_test.go
 
 # .goreleaser.yml
 .goreleaser.yml
