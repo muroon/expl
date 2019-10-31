@@ -26,14 +26,18 @@ type ExplainInfo struct {
 
 // ExplainFilter filter option
 type ExplainFilter struct {
-	SelectType    []string
-	SelectTypeNot []string
-	Table         []string
-	TableNot      []string
-	Type          []string
-	TypeNot       []string
-	Extra         []string
-	ExtraNot      []string
+	SelectType      []string
+	SelectTypeNot   []string
+	Table           []string
+	TableNot        []string
+	Type            []string
+	TypeNot         []string
+	PossibleKeys    []string
+	PossibleKeysNot []string
+	Key             []string
+	KeyNot          []string
+	Extra           []string
+	ExtraNot        []string
 }
 
 // ExplainOption option of service.Explain

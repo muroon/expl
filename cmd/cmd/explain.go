@@ -75,6 +75,10 @@ option:
                                         --filter-type index, ref
                                         appear results wich "index" or "ref" types.
   --filter-no-type:         strings filter results without target types.
+  --filter-possible-keys:   strings filter results by target possible keys.
+  --filter-no-possible-keys:strings filter results without target possible keys.
+  --filter-key:             strings filter results by target key.
+  --filter-no-key:          strings filter results without target key.
   --filter-extra:           strings filter results by target taypes.
                                       ex)
                                         --filter-extra filesort, "using where" 
@@ -182,6 +186,10 @@ var explainCmd = &cobra.Command{
 		fiOpt.TableNot = viper.GetStringSlice("filter-no-table")
 		fiOpt.Type = viper.GetStringSlice("filter-type")
 		fiOpt.TypeNot = viper.GetStringSlice("filter-no-type")
+		fiOpt.PossibleKeys = viper.GetStringSlice("filter-possible-keys")
+		fiOpt.PossibleKeysNot = viper.GetStringSlice("filter-no-possible-keys")
+		fiOpt.Key = viper.GetStringSlice("filter-key")
+		fiOpt.KeyNot = viper.GetStringSlice("filter-no-key")
 		fiOpt.Extra = viper.GetStringSlice("filter-extra")
 		fiOpt.ExtraNot = viper.GetStringSlice("filter-no-extra")
 
@@ -340,6 +348,10 @@ func init() {
 	viper.SetDefault("filter-no-table", []string{})
 	viper.SetDefault("filter-type", []string{})
 	viper.SetDefault("filter-no-type", []string{})
+	viper.SetDefault("filter-possible-keys", []string{})
+	viper.SetDefault("filter-no-possible-keys", []string{})
+	viper.SetDefault("filter-key", []string{})
+	viper.SetDefault("filter-no-key", []string{})
 	viper.SetDefault("filter-extra", []string{})
 	viper.SetDefault("filter-no-extra", []string{})
 
@@ -360,8 +372,12 @@ func init() {
 	explainCmd.PersistentFlags().StringSlice("filter-no-table", []string{}, "filter results without target tables.")
 	explainCmd.PersistentFlags().StringSlice("filter-type", []string{}, "filter results by target types.")
 	explainCmd.PersistentFlags().StringSlice("filter-no-type", []string{}, "filter results without target types.")
-	explainCmd.PersistentFlags().StringSlice("filter-extra", []string{}, "strings filter results by target taypes.")
-	explainCmd.PersistentFlags().StringSlice("filter-no-extra", []string{}, "filter results without target types.")
+	explainCmd.PersistentFlags().StringSlice("filter-possible-keys", []string{}, "strings filter results by target possible keys.")
+	explainCmd.PersistentFlags().StringSlice("filter-no-possible-keys", []string{}, "strings filter results without target possible keys.")
+	explainCmd.PersistentFlags().StringSlice("filter-key", []string{}, "filter results by target keys.")
+	explainCmd.PersistentFlags().StringSlice("filter-no-key", []string{}, "filter results without target keys.")
+	explainCmd.PersistentFlags().StringSlice("filter-extra", []string{}, "strings filter results by target types.")
+	explainCmd.PersistentFlags().StringSlice("filter-no-extra", []string{}, "strings filter results without target types.")
 	explainCmd.PersistentFlags().BoolP("use-table-map", "U", true, "use table-database mapping file.")
 	explainCmd.PersistentFlags().BoolP("update-table-map", "P", true, "update table-database mapping file before do explain sql. use current database environment.")
 	explainCmd.PersistentFlags().BoolP("ignore-error", "I", false, "ignore sql error.")
@@ -391,6 +407,10 @@ func init() {
 	viper.BindPFlag("filter-no-table", explainCmd.PersistentFlags().Lookup("filter-no-table"))
 	viper.BindPFlag("filter-type", explainCmd.PersistentFlags().Lookup("filter-type"))
 	viper.BindPFlag("filter-no-type", explainCmd.PersistentFlags().Lookup("filter-no-type"))
+	viper.BindPFlag("filter-possible-keys", explainCmd.PersistentFlags().Lookup("filter-possible-keys"))
+	viper.BindPFlag("filter-no-possible-keys", explainCmd.PersistentFlags().Lookup("filter-no-possible-keys"))
+	viper.BindPFlag("filter-key", explainCmd.PersistentFlags().Lookup("filter-key"))
+	viper.BindPFlag("filter-no-key", explainCmd.PersistentFlags().Lookup("filter-no-key"))
 	viper.BindPFlag("filter-extra", explainCmd.PersistentFlags().Lookup("filter-extra"))
 	viper.BindPFlag("filter-no-extra", explainCmd.PersistentFlags().Lookup("filter-no-extra"))
 	viper.BindPFlag("use-table-map", explainCmd.PersistentFlags().Lookup("use-table-map"))

@@ -239,6 +239,12 @@ func getAdditionalFlgInFilterResult(info *model.ExplainInfo, fi *model.ExplainFi
 			// Type
 			add = getAddFlagForFiltering(add, fi.Type, exp.Type, false, false)
 
+			// PossibleKey
+			add = getAddFlagForFiltering(add, fi.PossibleKeys, exp.PossibleKeys, false, true)
+
+			// Key
+			add = getAddFlagForFiltering(add, fi.Key, exp.Key, false, false)
+
 			// Extra
 			add = getAddFlagForFiltering(add, fi.Extra, exp.Extra, false, true)
 		}
@@ -251,6 +257,12 @@ func getAdditionalFlgInFilterResult(info *model.ExplainInfo, fi *model.ExplainFi
 
 		// TypeNot
 		add = getAddFlagForFiltering(add, fi.TypeNot, exp.Type, true, false)
+
+		// PossibleKeysNot
+		add = getAddFlagForFiltering(add, fi.PossibleKeysNot, exp.PossibleKeys, true, true)
+
+		// KeyNot
+		add = getAddFlagForFiltering(add, fi.KeyNot, exp.Key, true, false)
 
 		// ExtraNot
 		add = getAddFlagForFiltering(add, fi.ExtraNot, exp.Extra, true, true)
