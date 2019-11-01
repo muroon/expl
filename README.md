@@ -142,6 +142,10 @@ Filtering the explain results
 | filter-no-table | Show only results that do not contain the specified table |
 | filter-type | Show only results included in the specified "Type" of explain |
 | filter-no-type | Show only results that are not included in the specified "Type" of explain |
+| filter-possible-keys | Show only results included in the specified "Possible Keys" of explain |
+| filter-no-possible-keys | Show only results that are not included in the specified "Possible Keys" of explain |
+| filter-key | Show only results included in the specified "Key" of explain |
+| filter-no-key | Show only results that are not included in the specified "Key" of explain |
 | filter-extra | Show only results included in the specified "Extra" of explain |
 | filter-no-extra | Show only results that are not included in the specified "Extra" of explain |
 
@@ -190,4 +194,10 @@ $expl explain log --option-file ./option.yaml --filter-extra "using where"
 
 Display the value of the option just before execution
 
+### useful sample
 
+Extracts results where Index is not used even if a specific column is used in the Where clause
+
+```
+$expl explain log --log sql.log --filter-type ALL --filter-extra "using where" --filter-key ""
+```
