@@ -227,54 +227,86 @@ func getAdditionalFlgInFilterResult(info *model.ExplainInfo, fi *model.ExplainFi
 	}
 
 	add := true
-	for i, exp := range info.Values {
+	for _, exp := range info.Values {
 
-		if i == 0 || !add {
-			// SelectType
-			add = getAddFlagForFiltering(add, fi.SelectType, exp.SelectType, false, false)
+		// SelectType
+		if add = getAddFlagForFiltering(fi.SelectType, exp.SelectType, false, false); !add {
+			continue
+		}
 
-			// Table
-			add = getAddFlagForFiltering(add, fi.Table, exp.Table, false, false)
+		// Table
+		if add = getAddFlagForFiltering(fi.Table, exp.Table, false, false); !add {
+			continue
+		}
 
-			// Type
-			add = getAddFlagForFiltering(add, fi.Type, exp.Type, false, false)
+		// Type
+		if add = getAddFlagForFiltering(fi.Type, exp.Type, false, false); !add {
+			continue
+		}
 
-			// PossibleKey
-			add = getAddFlagForFiltering(add, fi.PossibleKeys, exp.PossibleKeys, false, true)
+		// PossibleKey
+		if add = getAddFlagForFiltering(fi.PossibleKeys, exp.PossibleKeys, false, true); !add {
+			continue
+		}
 
-			// Key
-			add = getAddFlagForFiltering(add, fi.Key, exp.Key, false, false)
+		// Key
+		if add = getAddFlagForFiltering(fi.Key, exp.Key, false, false); !add {
+			continue
+		}
 
-			// Extra
-			add = getAddFlagForFiltering(add, fi.Extra, exp.Extra, false, true)
+		// Extra
+		if add = getAddFlagForFiltering(fi.Extra, exp.Extra, false, true); !add {
+			continue
 		}
 
 		// SelectTypeNot
-		add = getAddFlagForFiltering(add, fi.SelectTypeNot, exp.SelectType, true, false)
+		if add = getAddFlagForFiltering(fi.SelectTypeNot, exp.SelectType, true, false); !add {
+			continue
+		}
 
 		// TableNot
-		add = getAddFlagForFiltering(add, fi.TableNot, exp.Table, true, false)
+		if add = getAddFlagForFiltering(fi.TableNot, exp.Table, true, false); !add {
+			continue
+		}
 
 		// TypeNot
-		add = getAddFlagForFiltering(add, fi.TypeNot, exp.Type, true, false)
+		if add = getAddFlagForFiltering(fi.TypeNot, exp.Type, true, false); !add {
+			continue
+		}
 
 		// PossibleKeysNot
-		add = getAddFlagForFiltering(add, fi.PossibleKeysNot, exp.PossibleKeys, true, true)
+		if add = getAddFlagForFiltering(fi.PossibleKeysNot, exp.PossibleKeys, true, true); !add {
+			continue
+		}
 
 		// KeyNot
-		add = getAddFlagForFiltering(add, fi.KeyNot, exp.Key, true, false)
+		if add = getAddFlagForFiltering(fi.KeyNot, exp.Key, true, false); !add {
+			continue
+		}
 
 		// ExtraNot
-		add = getAddFlagForFiltering(add, fi.ExtraNot, exp.Extra, true, true)
+		if add = getAddFlagForFiltering(fi.ExtraNot, exp.Extra, true, true); !add {
+			continue
+		}
+
+		if add {
+			break
+		}
 	}
 	return add
 }
 
-func getAddFlagForFiltering(add bool, list []string, target string, not, isExp bool) bool {
+func canGetAddFlagForFiltering(list []string) bool {
+	return list != nil && len(list) > 0
+}
+
+func getAddFlagForFiltering(list []string, target string, not, isExp bool) bool {
 
 	if list == nil || len(list) == 0 {
-		return add
+		return true
 	}
+
+	var add bool
 
 	for _, val := range list {
 		if isTrueForFiltering(val, target, isExp) == not {
