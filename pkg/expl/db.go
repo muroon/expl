@@ -3,7 +3,7 @@ package expl
 import (
 	"context"
 	"database/sql"
-	"expl/model"
+	"expl/pkg/expl/model"
 
 	"fmt"
 

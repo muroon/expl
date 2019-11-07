@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	"expl"
+	"expl/pkg/expl"
 	"fmt"
 	"os"
 

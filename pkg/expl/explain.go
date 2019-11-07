@@ -2,7 +2,7 @@ package expl
 
 import (
 	"context"
-	"expl/model"
+	"expl/pkg/expl/model"
 	"strings"
 )
 

@@ -1,7 +1,7 @@
 package expl
 
 import (
-	"expl/model"
+	"expl/pkg/expl/model"
 	"fmt"
 	"testing"
 )

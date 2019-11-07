@@ -16,9 +16,9 @@ package cmd
 
 import (
 	"context"
-	"expl"
-	"expl/model"
-	"expl/view"
+	"expl/pkg/expl"
+	"expl/pkg/expl/model"
+	"expl/pkg/expl/view"
 
 	"fmt"
 	"os"

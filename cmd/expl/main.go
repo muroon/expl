@@ -15,9 +15,9 @@
 package main
 
 import (
-	cmd "expl/cmd/cmd"
+	subcmd "expl/cmd/expl/cmd"
 )
 
 func main() {
-	cmd.Execute()
+	subcmd.Execute()
 }

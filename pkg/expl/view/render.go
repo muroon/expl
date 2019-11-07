@@ -1,7 +1,7 @@
 package view
 
 import (
-	"expl/model"
+	"expl/pkg/expl/model"
 	"fmt"
 	"os"
 	"strconv"
