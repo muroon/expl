@@ -8,5 +8,3 @@ conf_test.go
 # .idea/
 .idea/
 
-# .goreleaser.yml
-.goreleaser.yml
