@@ -17,7 +17,7 @@ package cmd
 import (
 	"context"
 	"errors"
-	"expl/pkg/expl"
+	"github.com/muroon/expl/pkg/expl"
 	"fmt"
 	"os"
 

@@ -16,9 +16,9 @@ package cmd
 
 import (
 	"context"
-	"expl/pkg/expl"
-	"expl/pkg/expl/model"
-	"expl/pkg/expl/view"
+	"github.com/muroon/expl/pkg/expl"
+	"github.com/muroon/expl/pkg/expl/model"
+	"github.com/muroon/expl/pkg/expl/view"
 
 	"fmt"
 	"os"

@@ -15,7 +15,7 @@
 package main
 
 import (
-	subcmd "expl/cmd/expl/cmd"
+	subcmd "github.com/muroon/expl/cmd/expl/cmd"
 )
 
 func main() {

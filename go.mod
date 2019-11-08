@@ -1,4 +1,4 @@
-module expl
+module github.com/muroon/expl
 
 require (
 	github.com/go-sql-driver/mysql v1.4.1

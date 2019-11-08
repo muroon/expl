@@ -3,7 +3,7 @@ package expl
 import (
 	"context"
 	"database/sql"
-	"expl/pkg/expl/model"
+	"github.com/muroon/expl/pkg/expl/model"
 
 	"fmt"
 

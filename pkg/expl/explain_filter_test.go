@@ -1,7 +1,7 @@
 package expl
 
 import (
-	"expl/pkg/expl/model"
+	"github.com/muroon/expl/pkg/expl/model"
 	"fmt"
 	"testing"
 )

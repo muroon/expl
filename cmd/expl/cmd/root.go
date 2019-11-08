@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	"expl/pkg/expl"
+	"github.com/muroon/expl/pkg/expl"
 	"fmt"
 	"os"
 
