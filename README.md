@@ -7,10 +7,36 @@ This tool runs multiple SQL explain from SQL log.
 - Read Log or DB(mysql.general_log table) and explain multiple SQL
 - Content filtering, Display explain result with 'SELECT_TYPE', 'TABLE', 'TYPE', 'EXTRA' specified
 
+# installation
+
+### Linux
+
+```
+wget https://github.com/muroon/expl/releases/download/v1.0.5/expl_1.0.5_Linux_x86_64.tar.gz
+mkdir expl_1.0.5_Linux_x86_64
+tar -zxvf expl_1.0.5_Linux_x86_64.tar.gz -C expl_1.0.5_Linux_x86_64
+ln -s expl_1.0.5_Linux_x86_64/expl /user/local/expl
+```
+
+### Mac
+
+```
+curl -vLJO -H 'Accept: application/octet-stream' https://github.com/muroon/expl/releases/download/v1.0.5/expl_1.0.5_Darwin_x86_64.tar.gz
+mkdir expl_1.0.5_Darwin_x86_64
+tar -zxvf expl_1.0.5_Darwin_x86_64.tar.gz -C expl_1.0.5_Darwin_x86_64
+ln -s expl_1.0.5_Darwin_x86_64/expl /user/local/expl
+```
+
+### Go
+
+```
+go get github.com/muroon/expl/cmd/expl
+```
+
 # simple usage
 
 ```
-$expl explain simple "select * from memo" --database database1 --host localhost --user root --pass ""
+expl explain simple "select * from memo" --database database1 --host localhost --user root --pass ""
 
   DataBase:  database1
   SQL:       select * from memo
@@ -33,8 +59,8 @@ This includes relationships between tables and databases.
 ```
 # expl conf add --host host --database database --user user --pass password --conf config_file_path
 
-$expl conf add --host localhost --database database1 --user root --pass "" --conf config.yaml
-$expl conf add --host localhost --database database2 --user root --pass "" --conf config.yaml
+expl conf add --host localhost --database database1 --user root --pass "" --conf config.yaml
+expl conf add --host localhost --database database2 --user root --pass "" --conf config.yaml
 ```
 
 ## 2. Execute Explian ("explain" sub command)
@@ -49,7 +75,7 @@ This has advantages such as using the "Combine SQL" (see below)
 ```
 #expl explain mode -c config_file_path --format format_type --log sql_log_file_path
 
-$expl explain log -c config.yaml --format simple --log simple.yaml
+expl explain log -c config.yaml --format simple --log simple.yaml
 ```
 
 # explain sub command
@@ -64,13 +90,13 @@ $expl explain log -c config.yaml --format simple --log simple.yaml
 
 ```
 # simple mode
-$expl explain simple "select * from memo" --database database1 --host localhost --user root --pass ""
+expl explain simple "select * from memo" --database database1 --host localhost --user root --pass ""
 
 # log mode
-$expl explain log --conf config.yaml --format official --log sql.log
+expl explain log --conf config.yaml --format official --log sql.log
 
 # log-db mode
-$expl explain log-db --conf config.yaml --format official
+expl explain log-db --conf config.yaml --format official
 ```
 
 ### conf option
@@ -92,13 +118,13 @@ format of one line in SQL log file.
 
 ```
 # simple format
-$expl explain simple "select * from memo" --database database1 --host localhost --user root --pass ""
+expl explain simple "select * from memo" --database database1 --host localhost --user root --pass ""
 
 # official format
-$expl explain log --conf config.yaml --format official --log /var/lib/mysql/general_sql.log
+expl explain log --conf config.yaml --format official --log /var/lib/mysql/general_sql.log
 
 # command format
-$expl explain log --conf config.yaml --log custom_sql.log --format command --format-cmd "cut -c 21-"
+expl explain log --conf config.yaml --log custom_sql.log --format command --format-cmd "cut -c 21-"
 ```
 
 #### format-cmd option
@@ -107,10 +133,10 @@ Using only "command" format.
 OS command for edit line of log to raw SQL.
 
 ```
-$expl explain log --conf config.yaml --log custom_sql.log --format command --format-cmd "cut -c 21-"
+expl explain log --conf config.yaml --log custom_sql.log --format command --format-cmd "cut -c 21-"
 
 # same (using pipe simple mode)
-$cut -c 21- custom_sql.log | xargs -I$ expl explain simple "$" --conf config.yaml --format command --format-cmd "cut -c 21-"
+cut -c 21- custom_sql.log | xargs -I$ expl explain simple "$" --conf config.yaml --format command --format-cmd "cut -c 21-"
 ```
 
 ### Combine SQL option
@@ -127,7 +153,7 @@ select * from memo where id = 100;
 ```
 
 ```
-$expl explain log --conf config.yaml --format official --log /var/lib/mysql/general_sql.log --combine-sql
+expl explain log --conf config.yaml --format official --log /var/lib/mysql/general_sql.log --combine-sql
 ```
 
 ### filter option
@@ -152,7 +178,7 @@ Filtering the explain results
 ```
 # view only results where includes "ALL" in TYPE column.
 
-$expl explain log --conf config.yaml --format official --log /var/lib/mysql/general_sql.log --filter-type ALL
+expl explain log --conf config.yaml --format official --log /var/lib/mysql/general_sql.log --filter-type ALL
 
   DataBase:  memo_sample
   SQL:       select tag.* from tag, tag_memo where tag.id = tag_memo.tag_id
@@ -169,7 +195,7 @@ $expl explain log --conf config.yaml --format official --log /var/lib/mysql/gene
 This is to ignore the "Explain SQL Error" or "SQL Parse Error".
 
 ```
-$expl explain log --conf config.yaml --format official --log /var/lib/mysql/general_sql.log --ignore-error
+expl explain log --conf config.yaml --format official --log /var/lib/mysql/general_sql.log --ignore-error
 ```
 With SQL parse or explain SQL errors, let's try use this option.
 
@@ -187,7 +213,7 @@ If there are duplicate definitions, priority is given in the following order
 3. option file
 
 ```
-$expl explain log --option-file ./option.yaml --filter-extra "using where"
+expl explain log --option-file ./option.yaml --filter-extra "using where"
 ```
 
 ### verbose output option
@@ -199,5 +225,5 @@ Display the value of the option just before execution
 Extracts results where Index is not used even if a specific column is used in the Where clause
 
 ```
-$expl explain log --log sql.log --filter-type ALL --filter-extra "using where" --filter-key ""
+expl explain log --log sql.log --filter-type ALL --filter-extra "using where" --filter-key ""
 ```
