@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-const Version string = "1.0.4"
+const Version string = "1.0.5"
 
 func getPath(filePath string) (string, error) {
 
