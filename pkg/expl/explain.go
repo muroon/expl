@@ -296,13 +296,9 @@ func getAdditionalFlgInFilterResult(info *model.ExplainInfo, fi *model.ExplainFi
 	return add
 }
 
-func canGetAddFlagForFiltering(list []string) bool {
-	return list != nil && len(list) > 0
-}
-
 func getAddFlagForFiltering(list []string, target string, not, isExp bool) bool {
 
-	if list == nil || len(list) == 0 {
+	if len(list) == 0 {
 		return true
 	}
 
@@ -326,8 +322,7 @@ func getAddFlagForFiltering(list []string, target string, not, isExp bool) bool 
 
 func isTrueForFiltering(val, target string, isExp bool) bool {
 	if isExp && len(target) > 0 {
-		return (strings.Index(strings.ToLower(val), strings.ToLower(target)) > -1)
-	} else {
-		return (val == target)
+		return strings.Contains(strings.ToLower(val), strings.ToLower(target))
 	}
+	return val == target
 }

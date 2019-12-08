@@ -5,7 +5,7 @@ type Explain struct {
 	ID           int64
 	SelectType   string
 	Table        string
-	Partitions   int64
+	Partitions   string
 	Type         string
 	PossibleKeys string
 	Key          string

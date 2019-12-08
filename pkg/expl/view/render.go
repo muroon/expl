@@ -69,7 +69,7 @@ func getRecord(e *model.Explain) []string {
 		strconv.FormatInt(e.ID, 10),
 		e.SelectType,
 		e.Table,
-		strconv.FormatInt(e.Partitions, 10),
+		e.Partitions,
 		e.Type,
 		e.PossibleKeys,
 		e.Key,

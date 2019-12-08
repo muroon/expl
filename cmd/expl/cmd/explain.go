@@ -98,21 +98,21 @@ option:
 
 func validateArgs(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("invalit parameter.")
+		return fmt.Errorf("invalit parameter")
 	}
 
 	mode := args[0]
 	switch mode {
 	case "simple":
 		if len(args) < 2 {
-			return fmt.Errorf("sql is none.")
+			return fmt.Errorf("sql is none")
 		}
 	case "log":
 		return nil
 	case "log-db":
 		return nil
 	default:
-		return fmt.Errorf("invalid mode. mode mast be (simple, log, log-db).")
+		return fmt.Errorf("invalid mode. mode mast be (simple, log, log-db)")
 	}
 
 	return nil
@@ -265,21 +265,21 @@ var explainCmd = &cobra.Command{
 				qCh, erCh := expl.LoadQueriesFromLogChannels(ctx, logPath, expl.FormatType(format), formatCmd)
 
 				exCh, errCh := expl.ExplainChannels(ctx, qCh, expOpt, fiOpt)
+			L:
 				for {
 					select {
 					case exp, ok := <-exCh:
 						if !ok {
-							return nil
-						} else {
-							view.RenderExplain(exp, expOpt.Uniq)
+							break L
 						}
+						view.RenderExplain(exp, expOpt.Uniq)
 					case err = <-errCh:
 						if err != nil {
-							return err
+							break L
 						}
-					case er := <-erCh:
-						if er != nil {
-							return er
+					case err = <-erCh:
+						if err != nil {
+							break L
 						}
 					}
 				}
@@ -301,21 +301,21 @@ var explainCmd = &cobra.Command{
 				qCh, erCh := expl.LoadQueriesFromDBChannels(ctx)
 
 				exCh, errCh := expl.ExplainChannels(ctx, qCh, expOpt, fiOpt)
+			L:
 				for {
 					select {
 					case exp, ok := <-exCh:
 						if !ok {
-							return nil
-						} else {
-							view.RenderExplain(exp, expOpt.Uniq)
+							break L
 						}
+						view.RenderExplain(exp, expOpt.Uniq)
 					case err = <-errCh:
 						if err != nil {
-							return err
+							break L
 						}
-					case er := <-erCh:
-						if er != nil {
-							return er
+					case err = <-erCh:
+						if err != nil {
+							break L
 						}
 					}
 				}
@@ -386,39 +386,39 @@ func init() {
 	explainCmd.Flags().StringP("option-file", "", "", "option yaml file.")
 	explainCmd.Flags().BoolP("verbose", "v", false, "verbose output.")
 
-	viper.BindPFlag("database", explainCmd.PersistentFlags().Lookup("database"))
-	viper.BindPFlag("database", explainCmd.PersistentFlags().ShorthandLookup("d"))
-	viper.BindPFlag("host", explainCmd.PersistentFlags().Lookup("host"))
-	viper.BindPFlag("host", explainCmd.PersistentFlags().ShorthandLookup("H"))
-	viper.BindPFlag("user", explainCmd.PersistentFlags().Lookup("user"))
-	viper.BindPFlag("user", explainCmd.PersistentFlags().ShorthandLookup("u"))
-	viper.BindPFlag("pass", explainCmd.PersistentFlags().Lookup("pass"))
-	viper.BindPFlag("pass", explainCmd.PersistentFlags().ShorthandLookup("p"))
-	viper.BindPFlag("conf", explainCmd.PersistentFlags().Lookup("conf"))
-	viper.BindPFlag("conf", explainCmd.PersistentFlags().ShorthandLookup("c"))
-	viper.BindPFlag("log", explainCmd.PersistentFlags().Lookup("log"))
-	viper.BindPFlag("log", explainCmd.PersistentFlags().ShorthandLookup("l"))
-	viper.BindPFlag("format", explainCmd.PersistentFlags().Lookup("format"))
-	viper.BindPFlag("format", explainCmd.PersistentFlags().ShorthandLookup("f"))
-	viper.BindPFlag("format-cmd", explainCmd.PersistentFlags().Lookup("format-cmd"))
-	viper.BindPFlag("filter-select-type", explainCmd.PersistentFlags().Lookup("filter-select-type"))
-	viper.BindPFlag("filter-no-select-type", explainCmd.PersistentFlags().Lookup("filter-no-select-type"))
-	viper.BindPFlag("filter-table", explainCmd.PersistentFlags().Lookup("filter-table"))
-	viper.BindPFlag("filter-no-table", explainCmd.PersistentFlags().Lookup("filter-no-table"))
-	viper.BindPFlag("filter-type", explainCmd.PersistentFlags().Lookup("filter-type"))
-	viper.BindPFlag("filter-no-type", explainCmd.PersistentFlags().Lookup("filter-no-type"))
-	viper.BindPFlag("filter-possible-keys", explainCmd.PersistentFlags().Lookup("filter-possible-keys"))
-	viper.BindPFlag("filter-no-possible-keys", explainCmd.PersistentFlags().Lookup("filter-no-possible-keys"))
-	viper.BindPFlag("filter-key", explainCmd.PersistentFlags().Lookup("filter-key"))
-	viper.BindPFlag("filter-no-key", explainCmd.PersistentFlags().Lookup("filter-no-key"))
-	viper.BindPFlag("filter-extra", explainCmd.PersistentFlags().Lookup("filter-extra"))
-	viper.BindPFlag("filter-no-extra", explainCmd.PersistentFlags().Lookup("filter-no-extra"))
-	viper.BindPFlag("use-table-map", explainCmd.PersistentFlags().Lookup("use-table-map"))
-	viper.BindPFlag("use-table-map", explainCmd.PersistentFlags().ShorthandLookup("U"))
-	viper.BindPFlag("update-table-map", explainCmd.PersistentFlags().Lookup("update-table-map"))
-	viper.BindPFlag("update-table-map", explainCmd.PersistentFlags().ShorthandLookup("P"))
-	viper.BindPFlag("ignore-error", explainCmd.PersistentFlags().Lookup("ignore-error"))
-	viper.BindPFlag("ignore-error", explainCmd.PersistentFlags().ShorthandLookup("I"))
-	viper.BindPFlag("combine-sql", explainCmd.PersistentFlags().Lookup("combine-sql"))
-	viper.BindPFlag("combine-sql", explainCmd.PersistentFlags().ShorthandLookup("C"))
+	_ = viper.BindPFlag("database", explainCmd.PersistentFlags().Lookup("database"))
+	_ = viper.BindPFlag("database", explainCmd.PersistentFlags().ShorthandLookup("d"))
+	_ = viper.BindPFlag("host", explainCmd.PersistentFlags().Lookup("host"))
+	_ = viper.BindPFlag("host", explainCmd.PersistentFlags().ShorthandLookup("H"))
+	_ = viper.BindPFlag("user", explainCmd.PersistentFlags().Lookup("user"))
+	_ = viper.BindPFlag("user", explainCmd.PersistentFlags().ShorthandLookup("u"))
+	_ = viper.BindPFlag("pass", explainCmd.PersistentFlags().Lookup("pass"))
+	_ = viper.BindPFlag("pass", explainCmd.PersistentFlags().ShorthandLookup("p"))
+	_ = viper.BindPFlag("conf", explainCmd.PersistentFlags().Lookup("conf"))
+	_ = viper.BindPFlag("conf", explainCmd.PersistentFlags().ShorthandLookup("c"))
+	_ = viper.BindPFlag("log", explainCmd.PersistentFlags().Lookup("log"))
+	_ = viper.BindPFlag("log", explainCmd.PersistentFlags().ShorthandLookup("l"))
+	_ = viper.BindPFlag("format", explainCmd.PersistentFlags().Lookup("format"))
+	_ = viper.BindPFlag("format", explainCmd.PersistentFlags().ShorthandLookup("f"))
+	_ = viper.BindPFlag("format-cmd", explainCmd.PersistentFlags().Lookup("format-cmd"))
+	_ = viper.BindPFlag("filter-select-type", explainCmd.PersistentFlags().Lookup("filter-select-type"))
+	_ = viper.BindPFlag("filter-no-select-type", explainCmd.PersistentFlags().Lookup("filter-no-select-type"))
+	_ = viper.BindPFlag("filter-table", explainCmd.PersistentFlags().Lookup("filter-table"))
+	_ = viper.BindPFlag("filter-no-table", explainCmd.PersistentFlags().Lookup("filter-no-table"))
+	_ = viper.BindPFlag("filter-type", explainCmd.PersistentFlags().Lookup("filter-type"))
+	_ = viper.BindPFlag("filter-no-type", explainCmd.PersistentFlags().Lookup("filter-no-type"))
+	_ = viper.BindPFlag("filter-possible-keys", explainCmd.PersistentFlags().Lookup("filter-possible-keys"))
+	_ = viper.BindPFlag("filter-no-possible-keys", explainCmd.PersistentFlags().Lookup("filter-no-possible-keys"))
+	_ = viper.BindPFlag("filter-key", explainCmd.PersistentFlags().Lookup("filter-key"))
+	_ = viper.BindPFlag("filter-no-key", explainCmd.PersistentFlags().Lookup("filter-no-key"))
+	_ = viper.BindPFlag("filter-extra", explainCmd.PersistentFlags().Lookup("filter-extra"))
+	_ = viper.BindPFlag("filter-no-extra", explainCmd.PersistentFlags().Lookup("filter-no-extra"))
+	_ = viper.BindPFlag("use-table-map", explainCmd.PersistentFlags().Lookup("use-table-map"))
+	_ = viper.BindPFlag("use-table-map", explainCmd.PersistentFlags().ShorthandLookup("U"))
+	_ = viper.BindPFlag("update-table-map", explainCmd.PersistentFlags().Lookup("update-table-map"))
+	_ = viper.BindPFlag("update-table-map", explainCmd.PersistentFlags().ShorthandLookup("P"))
+	_ = viper.BindPFlag("ignore-error", explainCmd.PersistentFlags().Lookup("ignore-error"))
+	_ = viper.BindPFlag("ignore-error", explainCmd.PersistentFlags().ShorthandLookup("I"))
+	_ = viper.BindPFlag("combine-sql", explainCmd.PersistentFlags().Lookup("combine-sql"))
+	_ = viper.BindPFlag("combine-sql", explainCmd.PersistentFlags().ShorthandLookup("C"))
 }

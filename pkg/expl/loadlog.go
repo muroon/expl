@@ -9,14 +9,21 @@ import (
 	"strings"
 )
 
+// FormatType format type of input sql
 type FormatType string
 
 const (
+	// FormatSimple simple sql
 	FormatSimple   FormatType = "simple"
+
+	// FormatOfficial mysql official log
 	FormatOfficial FormatType = "official"
+
+	// FormatCommand customize format by command
 	FormatCommand  FormatType = "command"
 )
 
+// LoadQueriesFromLogChannels loading queries from log through channels
 func LoadQueriesFromLogChannels(
 	ctx context.Context, filePath string, format FormatType, cmd string,
 ) (<-chan string, <-chan error) {
@@ -61,6 +68,7 @@ func LoadQueriesFromLogChannels(
 	return qCh, errCh
 }
 
+// LoadQueriesFromDBChannels loading queries from database through channel
 func LoadQueriesFromDBChannels(ctx context.Context) (<-chan string, <-chan error) {
 	qCh := make(chan string)
 	errCh := make(chan error)
@@ -95,6 +103,7 @@ func LoadQueriesFromDBChannels(ctx context.Context) (<-chan string, <-chan error
 	return qCh, errCh
 }
 
+// GetQueryByFormat get query by format type
 func GetQueryByFormat(format FormatType, line, cmd string) (string, error) {
 	query := ""
 
@@ -102,7 +111,7 @@ func GetQueryByFormat(format FormatType, line, cmd string) (string, error) {
 		ws := strings.Split(line, "\t")
 
 		if len(ws) == 3 {
-			if strings.Index(ws[1], "Execute") > -1 || strings.Index(ws[1], "Query") > -1 {
+			if strings.Contains(ws[1], "Execute") || strings.Contains(ws[1], "Query") {
 				query = ws[2]
 			}
 		}
@@ -113,8 +122,14 @@ func GetQueryByFormat(format FormatType, line, cmd string) (string, error) {
 
 		var out bytes.Buffer
 		c.Stdout = &out
-		c.Start()
-		c.Wait()
+		err := c.Start()
+		if err != nil {
+			return "", err
+		}
+		err = c.Wait()
+		if err != nil {
+			return "", err
+		}
 
 		query = out.String()
 

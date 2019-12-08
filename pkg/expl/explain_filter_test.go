@@ -40,15 +40,13 @@ func TestUseCaseExplain_IsTrueForFiltering(t *testing.T) {
 
 func TestUseCaseExplain_GetAddFlagForFiltering(t *testing.T) {
 
-	res := true
-	res = getAddFlagForFiltering([]string{"SIMPLE", "PRIMARY"}, "SIMPLE", false, false)
+	res := getAddFlagForFiltering([]string{"SIMPLE", "PRIMARY"}, "SIMPLE", false, false)
 	if !res {
 		t.Errorf("failed TestUseCaseExplain_GetAddFlagForFiltering %v",
 			fmt.Errorf("isTrueForFiltering (%v, %s, %v, %v)", []string{"SIMPLE", "ALL"}, "SIMPLE", false, false),
 		)
 	}
 
-	res = true
 	res = getAddFlagForFiltering([]string{}, "SIMPLE", false, false)
 	if !res {
 		t.Errorf("failed TestUseCaseExplain_GetAddFlagForFiltering %v",
@@ -56,7 +54,6 @@ func TestUseCaseExplain_GetAddFlagForFiltering(t *testing.T) {
 		)
 	}
 
-	res = true
 	res = getAddFlagForFiltering([]string{}, "SIMPLE", true, false)
 	if !res {
 		t.Errorf("failed TestUseCaseExplain_GetAddFlagForFiltering %v",
@@ -64,7 +61,6 @@ func TestUseCaseExplain_GetAddFlagForFiltering(t *testing.T) {
 		)
 	}
 
-	res = true
 	res = getAddFlagForFiltering([]string{"PRIMARY"}, "SIMPLE", false, false)
 	if res {
 		t.Errorf("failed TestUseCaseExplain_GetAddFlagForFiltering %v",
@@ -72,7 +68,6 @@ func TestUseCaseExplain_GetAddFlagForFiltering(t *testing.T) {
 		)
 	}
 
-	res = true
 	res = getAddFlagForFiltering([]string{"SIMPLE"}, "SIMPLE", true, false)
 	if res {
 		t.Errorf("failed TestUseCaseExplain_GetAddFlagForFiltering %v",
@@ -80,7 +75,6 @@ func TestUseCaseExplain_GetAddFlagForFiltering(t *testing.T) {
 		)
 	}
 
-	res = true
 	res = getAddFlagForFiltering([]string{"PRIMARY"}, "SIMPLE", true, false)
 	if !res {
 		t.Errorf("failed TestUseCaseExplain_GetAddFlagForFiltering %v",
@@ -95,6 +89,7 @@ func TestUseCaseExplain_FilterResults(t *testing.T) {
 		setExplainID(1),
 		setExplainSelectedType("SIMPLE"),
 		setExplainTable("tag_memo"),
+		setExplainPartitions(""),
 		setExplainType("ref"),
 		setExplainPossibleKeys("PRIMARY,memo_id"),
 		setExplainKey("memo_id"),
@@ -252,7 +247,7 @@ func setExplainTable(table string) option {
 	}
 }
 
-func setExplainPartitions(partitions int64) option {
+func setExplainPartitions(partitions string) option {
 	return func(exp *model.Explain) *model.Explain {
 		exp.Partitions = partitions
 		return exp

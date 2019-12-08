@@ -1,9 +1,11 @@
 package model
 
+// DBInfo struct of database info
 type DBInfo struct {
 	Hosts []*DBHost
 }
 
+// DBHost struct of database host
 type DBHost struct {
 	Address   string
 	User      string
@@ -13,10 +15,11 @@ type DBHost struct {
 	Databases []*DBDatabase
 }
 
+// DBDatabase struct of database
 type DBDatabase struct {
 	Name   string
 	Tables []string
 }
 
-// key:table value:database
+// TableDBMap table-database mapping (key:table value:database)
 type TableDBMap map[string][]string

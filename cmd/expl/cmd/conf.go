@@ -121,7 +121,7 @@ var confCmd = &cobra.Command{
 			err = expl.ReloadAllTableInfo(ctx, filePath)
 			fmt.Printf("conf %s\n", action)
 		default:
-			return fmt.Errorf("%s is invalid action\n", action)
+			return fmt.Errorf("%s is invalid action", action)
 		}
 
 		if err != nil {

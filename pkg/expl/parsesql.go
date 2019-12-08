@@ -59,7 +59,7 @@ func getFirstTableName(stmt sqlparser.Statement) string {
 		expr = stmt.(*sqlparser.Delete).TableExprs[0].(*sqlparser.AliasedTableExpr).Expr
 	}
 
-	switch expr.(type) {
+	switch expr := expr.(type) {
 	case sqlparser.TableName:
 		out := sqlparser.GetTableName(expr)
 		if out.String() != "" {
@@ -67,7 +67,7 @@ func getFirstTableName(stmt sqlparser.Statement) string {
 		}
 
 	case *sqlparser.Subquery:
-		return getFirstTableName(expr.(*sqlparser.Subquery).Select)
+		return getFirstTableName(expr.Select)
 	}
 
 	return ""
@@ -91,15 +91,15 @@ func getTableNameFromDBDot(query string) string {
 	if len(tokens) <= index+1 {
 		return ""
 	}
-	db_tb := tokens[index+1]
+	dbTb := tokens[index+1]
 
-	ind := strings.Index(db_tb, ".")
+	ind := strings.Index(dbTb, ".")
 	if ind == -1 {
 		return ""
 	}
 
 	ind = ind + 1
-	table := db_tb[ind:]
+	table := dbTb[ind:]
 
 	return table
 }

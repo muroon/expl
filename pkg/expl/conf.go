@@ -43,58 +43,66 @@ type param struct {
 
 var dbInfo *model.DBInfo
 
-type paramFunc func(pm *param) *param
+// DBOption function of database setting option
+type DBOption func(pm *param) *param
 
-func DBUser(user string) paramFunc {
+// DBUser user setting function
+func DBUser(user string) DBOption {
 	return func(pm *param) *param {
 		pm.User = user
 		return pm
 	}
 }
 
-func DBPass(pass string) paramFunc {
+// DBPass password setting function
+func DBPass(pass string) DBOption {
 	return func(pm *param) *param {
 		pm.Password = pass
 		return pm
 	}
 }
 
-func DBHost(address string) paramFunc {
+// DBHost setting host function
+func DBHost(address string) DBOption {
 	return func(pm *param) *param {
 		pm.Address = address
 		return pm
 	}
 }
 
-func DBDatabase(database string) paramFunc {
+// DBDatabase database setting function
+func DBDatabase(database string) DBOption {
 	return func(pm *param) *param {
 		pm.Database = database
 		return pm
 	}
 }
 
-func DBPort(port int) paramFunc {
+// DBPort setting port function
+func DBPort(port int) DBOption {
 	return func(pm *param) *param {
 		pm.Port = port
 		return pm
 	}
 }
 
-func DBProtocol(protocol string) paramFunc {
+// DBProtocol setting protocol function
+func DBProtocol(protocol string) DBOption {
 	return func(pm *param) *param {
 		pm.Protocol = protocol
 		return pm
 	}
 }
 
-func ConfFilePath(path string) paramFunc {
+// ConfFilePath setting config path function
+func ConfFilePath(path string) DBOption {
 	return func(pm *param) *param {
 		pm.ConfFilePath = path
 		return pm
 	}
 }
 
-func getParam(pmfs ...paramFunc) *param {
+func getParam(pmfs ...DBOption) *param {
 	pm := &param{
 		Address:  "localhost",
 		Port:     3306,
@@ -106,7 +114,8 @@ func getParam(pmfs ...paramFunc) *param {
 	return pm
 }
 
-func AddHostAndDatabase(ctx context.Context, pmfs ...paramFunc) error {
+// AddHostAndDatabase adding host and database
+func AddHostAndDatabase(ctx context.Context, pmfs ...DBOption) error {
 	pm := getParam(pmfs...)
 
 	conf := new(config)
@@ -175,7 +184,8 @@ func AddHostAndDatabase(ctx context.Context, pmfs ...paramFunc) error {
 	return setConfig(ctx, conf, pm.ConfFilePath)
 }
 
-func RemoveHostAndDatabase(ctx context.Context, pmfs ...paramFunc) error {
+// RemoveHostAndDatabase removing host and database
+func RemoveHostAndDatabase(ctx context.Context, pmfs ...DBOption) error {
 	pm := getParam(pmfs...)
 
 	conf, err := getConfig(ctx, pm.ConfFilePath)
@@ -228,6 +238,7 @@ func RemoveHostAndDatabase(ctx context.Context, pmfs ...paramFunc) error {
 	return setConfig(ctx, conf, pm.ConfFilePath)
 }
 
+// ReloadAllTableInfo reload all setting from file
 func ReloadAllTableInfo(ctx context.Context, filePath string) error {
 	conf, err := getConfig(ctx, filePath)
 	if err != nil {
@@ -257,14 +268,17 @@ func ReloadAllTableInfo(ctx context.Context, filePath string) error {
 	return setConfig(ctx, conf, filePath)
 }
 
+// GetDBInfo getting database information
 func GetDBInfo(ctx context.Context) *model.DBInfo {
 	return dbInfo
 }
 
+// SetDBInfo setting database information
 func SetDBInfo(ctx context.Context, info *model.DBInfo) {
 	dbInfo = info
 }
 
+// SetDBOne setting single db setting
 func SetDBOne(host, database, user, pass string) {
 	dbInfo = &model.DBInfo{
 		Hosts: []*model.DBHost{
@@ -278,6 +292,7 @@ func SetDBOne(host, database, user, pass string) {
 	}
 }
 
+// LoadDBInfo loading db information
 func LoadDBInfo(ctx context.Context, filePath string) error {
 	conf, err := getConfig(ctx, filePath)
 	if err != nil {
@@ -305,11 +320,12 @@ func LoadDBInfo(ctx context.Context, filePath string) error {
 		dbs = append(dbs, dbh)
 	}
 
-	SetDBInfo(ctx, &model.DBInfo{dbs})
+	SetDBInfo(ctx, &model.DBInfo{Hosts:dbs})
 
 	return nil
 }
 
+// GetTableDBMap getting table-database mapping
 func GetTableDBMap(ctx context.Context) model.TableDBMap {
 	info := GetDBInfo(ctx)
 

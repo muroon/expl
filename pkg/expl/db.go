@@ -20,8 +20,6 @@ func init() {
 
 var dbMap map[string]*sql.DB
 
-type dbm struct{}
-
 var dbType string
 
 var officialDB string
@@ -30,7 +28,7 @@ type explainResult struct {
 	ID           int64
 	SelectType   sql.NullString
 	Table        sql.NullString
-	Partitions   sql.NullInt64
+	Partitions   sql.NullString
 	Type         sql.NullString
 	PossibleKeys sql.NullString
 	Key          sql.NullString
@@ -85,7 +83,7 @@ func explain(ctx context.Context, database, sql string) ([]*model.Explain, error
 			ID:           ex.ID,
 			SelectType:   ex.SelectType.String,
 			Table:        ex.Table.String,
-			Partitions:   ex.Partitions.Int64,
+			Partitions:   ex.Partitions.String,
 			Type:         ex.Type.String,
 			PossibleKeys: ex.PossibleKeys.String,
 			Key:          ex.Key.String,
@@ -146,9 +144,3 @@ func showtables(database string) ([]string, error) {
 	return tables, nil
 }
 
-// close
-func closeAll(ctx context.Context) {
-	for _, db := range dbMap {
-		db.Close()
-	}
-}

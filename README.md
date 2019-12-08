@@ -12,19 +12,19 @@ This tool runs multiple SQL explain from SQL log.
 ### Linux
 
 ```
-wget https://github.com/muroon/expl/releases/download/v1.0.5/expl_1.0.5_Linux_x86_64.tar.gz
-mkdir expl_1.0.5_Linux_x86_64
-tar -zxvf expl_1.0.5_Linux_x86_64.tar.gz -C expl_1.0.5_Linux_x86_64
-ln -s expl_1.0.5_Linux_x86_64/expl /user/local/expl
+wget https://github.com/muroon/expl/releases/download/v1.0.6/expl_1.0.6_Linux_x86_64.tar.gz
+mkdir expl_1.0.6_Linux_x86_64
+tar -zxvf expl_1.0.6_Linux_x86_64.tar.gz -C expl_1.0.6_Linux_x86_64
+ln -s expl_1.0.6_Linux_x86_64/expl /user/local/expl
 ```
 
 ### Mac
 
 ```
-curl -vLJO -H 'Accept: application/octet-stream' https://github.com/muroon/expl/releases/download/v1.0.5/expl_1.0.5_Darwin_x86_64.tar.gz
-mkdir expl_1.0.5_Darwin_x86_64
-tar -zxvf expl_1.0.5_Darwin_x86_64.tar.gz -C expl_1.0.5_Darwin_x86_64
-ln -s expl_1.0.5_Darwin_x86_64/expl /user/local/expl
+curl -vLJO -H 'Accept: application/octet-stream' https://github.com/muroon/expl/releases/download/v1.0.6/expl_1.0.6_Darwin_x86_64.tar.gz
+mkdir expl_1.0.6_Darwin_x86_64
+tar -zxvf expl_1.0.6_Darwin_x86_64.tar.gz -C expl_1.0.6_Darwin_x86_64
+ln -s expl_1.0.6_Darwin_x86_64/expl /user/local/expl
 ```
 
 ### Go
@@ -43,7 +43,7 @@ expl explain simple "select * from memo" --database database1 --host localhost -
 +----+------------+-------+------------+------+--------------+-----+--------+-----+------+----------+-------+
 | ID | SELECTTYPE | TABLE | PARTITIONS | TYPE | POSSIBLEKEYS | KEY | KEYLEN | REF | ROWS | FILTERED | EXTRA |
 +----+------------+-------+------------+------+--------------+-----+--------+-----+------+----------+-------+
-|  1 | SIMPLE     | memo  |          0 | ALL  |              |     |      0 |     |   39 | 100.0000 |       |
+|  1 | SIMPLE     | memo  |            | ALL  |              |     |      0 |     |   39 | 100.0000 |       |
 +----+------------+-------+------------+------+--------------+-----+--------+-----+------+----------+-------+
 ```
 
@@ -185,8 +185,8 @@ expl explain log --conf config.yaml --format official --log /var/lib/mysql/gener
 +----+------------+----------+------------+------+--------------+---------+--------+--------------------+------+----------+-------------+
 | ID | SELECTTYPE |  TABLE   | PARTITIONS | TYPE | POSSIBLEKEYS |   KEY   | KEYLEN |        REF         | ROWS | FILTERED |    EXTRA    |
 +----+------------+----------+------------+------+--------------+---------+--------+--------------------+------+----------+-------------+
-|  1 | SIMPLE     | tag      |          0 | ALL  | PRIMARY      |         |      0 |                    |   22 | 100.0000 |             |
-|  1 | SIMPLE     | tag_memo |          0 | ref  | PRIMARY      | PRIMARY |      4 | memo_sample.tag.id |    1 | 100.0000 | Using index |
+|  1 | SIMPLE     | tag      |            | ALL  | PRIMARY      |         |      0 |                    |   22 | 100.0000 |             |
+|  1 | SIMPLE     | tag_memo |            | ref  | PRIMARY      | PRIMARY |      4 | memo_sample.tag.id |    1 | 100.0000 | Using index |
 +----+------------+----------+------------+------+--------------+---------+--------+--------------------+------+----------+-------------+
 ```
 

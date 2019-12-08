@@ -12,3 +12,5 @@ require (
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	gopkg.in/yaml.v2 v2.2.2
 )
+
+go 1.13
