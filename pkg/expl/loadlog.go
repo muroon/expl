@@ -6,6 +6,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -42,11 +43,13 @@ func LoadQueriesFromLogChannels(
 			errCh <- ErrWrap(err, UserInputError)
 		}
 
-		f, err := os.Open(filePath)
+		f, err := os.Open(filepath.Clean(filePath))
 		if err != nil {
 			errCh <- ErrWrap(err, UserInputError)
 		}
-		defer f.Close()
+		defer func() {
+			_ = f.Close()
+		}()
 
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {

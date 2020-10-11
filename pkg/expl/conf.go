@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/muroon/expl/pkg/expl/model"
 	"fmt"
+	"path/filepath"
 
 	"io/ioutil"
 	"os"
@@ -378,7 +379,7 @@ func getConfig(ctx context.Context, filePath string) (*config, error) {
 		return nil, err
 	}
 
-	buf, err := ioutil.ReadFile(filePath)
+	buf, err := ioutil.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return nil, ErrWrap(err, UserInputError)
 	}
